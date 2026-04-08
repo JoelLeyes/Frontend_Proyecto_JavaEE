@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatEmpresa — Chat Grupal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary:       #185FA5;
+      --primary-dark:  #0C447C;
+      --primary-light: #B5D4F4;
+      --bg:            #F0F4F9;
+    }
+
+    /* Layout pantalla completa */
+    html, body { height:100%; margin:0; padding:0; overflow:hidden; font-family:'Segoe UI', sans-serif; }
+    body { display:flex; flex-direction:column; background:var(--bg); }
+
+    /* ── Navbar top ── */
+    .chat-navbar {
+      background: var(--primary);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .back-link { color:var(--primary-light); font-size:20px; text-decoration:none; flex-shrink:0; }
+    .back-link:hover { color:#fff; }
+    .group-avatar {
+      width:40px; height:40px; border-radius:50%;
+      background:var(--primary-dark); color:var(--primary-light);
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; flex-shrink:0;
+    }
+    .nav-info { flex:1; min-width:0; }
+    .nav-name { color:#fff; font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .nav-sub  { color:var(--primary-light); font-size:11px; margin-top:1px; }
+    .nav-action { color:var(--primary-light); background:none; border:none; font-size:18px; cursor:pointer; padding:6px; border-radius:8px; }
+    .nav-action:hover { background:rgba(255,255,255,.1); color:#fff; }
+
+    /* ── Layout principal ── */
+    .main-content { flex:1; display:flex; overflow:hidden; }
+
+    /* ── Área de mensajes ── */
+    .chat-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .messages  {
+      flex:1; overflow-y:auto; padding:14px 16px;
+      display:flex; flex-direction:column; gap:3px;
+      background:var(--bg);
+    }
+    .messages::-webkit-scrollbar { width:4px; }
+    .messages::-webkit-scrollbar-thumb { background:#c5cfe0; border-radius:4px; }
+
+    /* ── Burbujas ── */
+    .mwrap     { display:flex; flex-direction:column; max-width:70%; }
+    .mwrap.out { align-self:flex-end; align-items:flex-end; }
+    .mwrap.in  { align-self:flex-start; align-items:flex-start; }
+    .mwrap.sys { align-self:center; max-width:100%; }
+
+    .bubble {
+      padding:9px 13px; border-radius:16px;
+      font-size:14px; line-height:1.45; word-break:break-word;
+    }
+    .bubble.out { background:var(--primary); color:#fff; border-bottom-right-radius:3px; }
+    .bubble.in  { background:#fff; color:#1a1a2e; border-bottom-left-radius:3px; border:0.5px solid #e5e8ef; }
+    .bubble.sys {
+      background:rgba(0,0,0,.04); color:#999;
+      font-size:12px; text-align:center; padding:5px 14px;
+      border-radius:12px; border:none;
+    }
+
+    .sender-name { font-size:11px; font-weight:600; margin-bottom:3px; padding-left:2px; }
+    .msg-time {
+      font-size:10px; margin-top:4px; padding:0 2px;
+      display:flex; align-items:center; gap:3px;
+    }
+    .msg-time.out { color:rgba(255,255,255,.6); justify-content:flex-end; }
+    .msg-time.in  { color:#bbb; }
+
+    /* Separador de fecha */
+    .date-sep {
+      display:flex; align-items:center; gap:10px;
+      margin:10px 0; align-self:center; width:100%;
+    }
+    .date-sep span {
+      font-size:11px; color:#aaa; white-space:nowrap;
+      background:#e4e8f0; padding:3px 10px; border-radius:10px;
+    }
+    .date-sep hr { flex:1; border:none; border-top:1px solid #e0e4ee; margin:0; }
+
+    /* Adjunto */
+    .attachment {
+      display:flex; align-items:center; gap:9px;
+      border-radius:10px; padding:8px 10px; margin-top:6px;
+      cursor:pointer;
+    }
+    .attachment.out { background:rgba(255,255,255,.15); }
+    .attachment.in  { background:#F0F4F9; }
+    .att-icon {
+      width:34px; height:34px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; font-weight:700; flex-shrink:0;
+    }
+    .att-name { font-size:12px; font-weight:500; }
+    .att-size { font-size:10px; opacity:.7; }
+
+    /* Reacciones */
+    .reactions { display:flex; gap:4px; margin-top:4px; flex-wrap:wrap; }
+    .reaction {
+      background:#fff; border:0.5px solid #e0e4ee;
+      border-radius:12px; padding:3px 8px;
+      font-size:12px; cursor:pointer; display:flex;
+      align-items:center; gap:4px; color:#555;
+      transition:background .15s;
+    }
+    .reaction:hover { background:#f0f4f9; }
+    .reaction .count { font-size:11px; color:#888; }
+
+    /* Typing indicator */
+    .typing-dots { display:flex; gap:4px; align-items:center; padding:4px 2px; }
+    .typing-dots span {
+      width:7px; height:7px; border-radius:50%;
+      background:#bbb; animation:bounce .9s infinite;
+      display:inline-block;
+    }
+    .typing-dots span:nth-child(2) { animation-delay:.15s; }
+    .typing-dots span:nth-child(3) { animation-delay:.3s; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+    /* ── Barra de input ── */
+    .input-bar {
+      background:#fff; border-top:0.5px solid #e0e4ee;
+      padding:10px 14px; display:flex;
+      align-items:flex-end; gap:8px; flex-shrink:0;
+    }
+    .input-action { background:none; border:none; color:#aaa; font-size:20px; cursor:pointer; padding:4px; flex-shrink:0; }
+    .input-action:hover { color:var(--primary); }
+    .msg-textarea {
+      flex:1; border:0.5px solid #dde2ee; border-radius:22px;
+      padding:9px 16px; font-size:14px; outline:none;
+      resize:none; max-height:100px; line-height:1.4;
+      background:#f7f9fc; color:#1a1a2e; transition:border-color .15s;
+    }
+    .msg-textarea:focus { border-color:var(--primary); background:#fff; }
+    .send-btn {
+      width:40px; height:40px; border-radius:50%;
+      background:var(--primary); color:#fff; border:none;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; cursor:pointer; flex-shrink:0;
+      transition:background .15s, transform .1s;
+    }
+    .send-btn:hover { background:var(--primary-dark); }
+    .send-btn:active { transform:scale(.95); }
+
+    /* ── Panel lateral de info del grupo ── */
+    .info-panel {
+      width:260px; background:#fff; border-left:0.5px solid #e0e4ee;
+      overflow-y:auto; flex-shrink:0; display:flex; flex-direction:column;
+    }
+    .info-panel::-webkit-scrollbar { width:3px; }
+    .info-panel::-webkit-scrollbar-thumb { background:#ddd; border-radius:3px; }
+    .info-header {
+      background:var(--primary); padding:20px 16px;
+      text-align:center; flex-shrink:0;
+    }
+    .info-group-av {
+      width:60px; height:60px; border-radius:50%;
+      background:var(--primary-dark); color:var(--primary-light);
+      font-size:20px; font-weight:700; display:flex;
+      align-items:center; justify-content:center;
+      margin:0 auto 10px; border:2px solid rgba(255,255,255,.2);
+    }
+    .info-name { color:#fff; font-size:15px; font-weight:600; }
+    .info-sub  { color:var(--primary-light); font-size:11px; margin-top:3px; }
+    .info-body { padding:14px; flex:1; }
+    .info-section {
+      font-size:10px; font-weight:600; color:#aaa;
+      letter-spacing:.5px; text-transform:uppercase;
+      margin:14px 0 8px;
+    }
+    .info-section:first-child { margin-top:0; }
+    .info-desc { font-size:12px; color:#666; line-height:1.55; }
+    .member-item {
+      display:flex; align-items:center; gap:10px;
+      padding:7px 0; border-bottom:0.5px solid #f0f0f0;
+    }
+    .member-item:last-child { border-bottom:none; }
+    .mem-avatar {
+      width:30px; height:30px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; font-weight:600; flex-shrink:0;
+    }
+    .mem-name  { font-size:13px; color:#1a1a2e; flex:1; }
+    .mem-role  { font-size:10px; padding:2px 6px; border-radius:4px; font-weight:500; }
+    .admin-tag { background:#E6F1FB; color:#0C447C; }
+    .online-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .info-action {
+      width:100%; padding:9px; border-radius:9px;
+      border:0.5px solid #e0e4ee; background:#f7f9fc;
+      font-size:13px; cursor:pointer; color:#1a1a2e;
+      text-align:left; display:flex; align-items:center; gap:8px;
+      transition:background .15s; margin-bottom:6px;
+    }
+    .info-action:hover { background:#eef2f8; }
+    .info-action.danger { border-color:#fca5a5; background:#fff5f5; color:#dc2626; }
+    .info-action.danger:hover { background:#fee2e2; }
+    .info-action i { width:16px; text-align:center; font-size:14px; }
+
+    /* Toggle panel en mobile */
+    @media(max-width:640px) {
+      .info-panel { display:none; }
+      .info-panel.show { display:flex; position:absolute; right:0; top:62px; bottom:0; z-index:20; width:80%; max-width:280px; box-shadow:-4px 0 20px rgba(0,0,0,.1); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<div class="chat-navbar">
+  <a href="conversations.html" class="back-link"><i class="bi bi-arrow-left"></i></a>
+  <div class="group-avatar">DS</div>
+  <div class="nav-info">
+    <div class="nav-name">Desarrollo de Software</div>
+    <div class="nav-sub" id="nav-status">Maria, Carlos, Alvaro y 2 más</div>
+  </div>
+  <button class="nav-action" title="Buscar"><i class="bi bi-search"></i></button>
+  <button class="nav-action" title="Info del grupo" onclick="togglePanel()"><i class="bi bi-info-circle"></i></button>
+</div>
+
+<!-- ── Contenido principal ── -->
+<div class="main-content" style="position:relative">
+
+  <!-- Chat -->
+  <div class="chat-area">
+    <div class="messages" id="messages">
+
+      <div class="date-sep"><hr/><span>Hoy</span><hr/></div>
+
+      <!-- Sistema -->
+      <div class="mwrap sys"><div class="bubble sys">Carlos Ramirez se unió al grupo</div></div>
+
+      <!-- Maria -->
+      <div class="mwrap in">
+        <div class="sender-name" style="color:#185FA5">Maria Lopez</div>
+        <div class="bubble in">
+          Buenos días equipo! Suban el nuevo build al servidor de pruebas
+          <div class="msg-time in">09:15</div>
+        </div>
+        <div class="reactions">
+          <div class="reaction">&#128077; <span class="count">3</span></div>
+          <div class="reaction">&#128293; <span class="count">1</span></div>
+        </div>
+      </div>
+
+      <!-- Carlos -->
+      <div class="mwrap in">
+        <div class="sender-name" style="color:#3C3489">Carlos Ramirez</div>
+        <div class="bubble in">
+          Ya lo tengo listo, subo en 5 minutos
+          <div class="msg-time in">09:32</div>
+        </div>
+      </div>
+
+      <!-- Carlos adjunto -->
+      <div class="mwrap in">
+        <div class="bubble in">
+          Acá el changelog del sprint
+          <div class="attachment in">
+            <div class="att-icon" style="background:#E6F1FB;color:#0C447C">
+              <i class="bi bi-file-earmark-pdf" style="font-size:16px"></i>
+            </div>
+            <div>
+              <div class="att-name" style="color:#1a1a2e">changelog_v2.4.pdf</div>
+              <div class="att-size" style="color:#888">128 KB · PDF</div>
+            </div>
+            <i class="bi bi-download ms-auto" style="color:#888;font-size:14px"></i>
+          </div>
+          <div class="msg-time in" style="margin-top:6px">09:33</div>
+        </div>
+      </div>
+
+      <!-- Propio -->
+      <div class="mwrap out">
+        <div class="bubble out">
+          Perfecto! Yo hago el deploy al EC2 ahora mismo
+          <div class="msg-time out">09:40 <i class="bi bi-check-all" style="color:#90cdf4;font-size:12px"></i></div>
+        </div>
+      </div>
+
+      <!-- Propio con imagen -->
+      <div class="mwrap out">
+        <div class="bubble out">
+          Captura del dashboard tras el deploy
+          <div class="attachment out">
+            <div class="att-icon" style="background:rgba(255,255,255,.2);color:#fff">
+              <i class="bi bi-image" style="font-size:16px"></i>
+            </div>
+            <div>
+              <div class="att-name" style="color:#fff">deploy_ok.png</div>
+              <div class="att-size" style="color:rgba(255,255,255,.65)">2.1 MB · Imagen</div>
+            </div>
+            <i class="bi bi-download ms-auto" style="color:rgba(255,255,255,.65);font-size:14px"></i>
+          </div>
+          <div class="msg-time out" style="margin-top:6px">09:45 <i class="bi bi-check-all" style="color:#90cdf4;font-size:12px"></i></div>
+        </div>
+      </div>
+
+      <!-- Maria responde -->
+      <div class="mwrap in">
+        <div class="sender-name" style="color:#185FA5">Maria Lopez</div>
+        <div class="bubble in">
+          Excelente! Todo andando correctamente ✅
+          <div class="msg-time in">09:47</div>
+        </div>
+        <div class="reactions">
+          <div class="reaction">&#127881; <span class="count">5</span></div>
+        </div>
+      </div>
+
+      <!-- Juan -->
+      <div class="mwrap in">
+        <div class="sender-name" style="color:#0F6E56">Juan Perez</div>
+        <div class="bubble in">
+          Genial equipo, lo marco como completado en Jira
+          <div class="msg-time in">09:50</div>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="mwrap in" id="typing-wrap" style="display:none">
+        <div class="sender-name" style="color:#3C3489">Carlos Ramirez</div>
+        <div class="bubble in" style="padding:10px 14px">
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Barra de input -->
+    <div class="input-bar">
+      <button class="input-action" title="Adjuntar archivo" onclick="simulateAttach()">
+        <i class="bi bi-paperclip"></i>
+      </button>
+      <button class="input-action" title="Emoji">
+        <i class="bi bi-emoji-smile"></i>
+      </button>
+      <textarea class="msg-textarea" id="msg-input" rows="1"
+                placeholder="Mensaje al grupo..."
+                oninput="autoResize(this)"
+                onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" onclick="sendMessage()" title="Enviar">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Panel de info del grupo ── -->
+  <div class="info-panel" id="info-panel">
+    <div class="info-header">
+      <div class="info-group-av">DS</div>
+      <div class="info-name">Desarrollo de Software</div>
+      <div class="info-sub">Creado el 10 ene 2024 · 5 miembros</div>
+    </div>
+    <div class="info-body">
+
+      <div class="info-section">Descripción</div>
+      <div class="info-desc">Canal oficial del equipo de desarrollo. Coordinación de sprints, deploys y revisiones de código.</div>
+
+      <div class="info-section">Miembros (5)</div>
+
+      <div class="member-item">
+        <div class="mem-avatar" style="background:#E6F1FB;color:#0C447C">AG</div>
+        <div class="flex-grow-1">
+          <div class="mem-name">Alvaro Garula <span style="font-size:10px;color:#aaa">(tú)</span></div>
+          <div style="font-size:11px;color:#aaa">Desarrollador Java</div>
+        </div>
+        <div class="online-dot" style="background:#22C55E"></div>
+        <span class="mem-role admin-tag">admin</span>
+      </div>
+
+      <div class="member-item">
+        <div class="mem-avatar" style="background:#FBEAF0;color:#72243E">ML</div>
+        <div class="flex-grow-1">
+          <div class="mem-name">Maria Lopez</div>
+          <div style="font-size:11px;color:#aaa">Tech Lead</div>
+        </div>
+        <div class="online-dot" style="background:#22C55E"></div>
+      </div>
+
+      <div class="member-item">
+        <div class="mem-avatar" style="background:#EEEDFE;color:#3C3489">CR</div>
+        <div class="flex-grow-1">
+          <div class="mem-name">Carlos Ramirez</div>
+          <div style="font-size:11px;color:#aaa">Backend Dev</div>
+        </div>
+        <div class="online-dot" style="background:#22C55E"></div>
+      </div>
+
+      <div class="member-item">
+        <div class="mem-avatar" style="background:#E1F5EE;color:#085041">JP</div>
+        <div class="flex-grow-1">
+          <div class="mem-name">Juan Perez</div>
+          <div style="font-size:11px;color:#aaa">Frontend Dev</div>
+        </div>
+        <div class="online-dot" style="background:#bbb"></div>
+      </div>
+
+      <div class="member-item">
+        <div class="mem-avatar" style="background:#FAEEDA;color:#633806">LM</div>
+        <div class="flex-grow-1">
+          <div class="mem-name">Lucia Martinez</div>
+          <div style="font-size:11px;color:#aaa">QA Engineer</div>
+        </div>
+        <div class="online-dot" style="background:#bbb"></div>
+      </div>
+
+      <div class="info-section">Archivos recientes</div>
+      <div class="d-flex flex-column gap-1 mb-3">
+        <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f7f9fc;cursor:pointer">
+          <i class="bi bi-file-earmark-pdf text-danger"></i>
+          <div style="font-size:12px;color:#1a1a2e;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">changelog_v2.4.pdf</div>
+          <i class="bi bi-download" style="font-size:12px;color:#aaa"></i>
+        </div>
+        <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f7f9fc;cursor:pointer">
+          <i class="bi bi-image text-primary"></i>
+          <div style="font-size:12px;color:#1a1a2e;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">deploy_ok.png</div>
+          <i class="bi bi-download" style="font-size:12px;color:#aaa"></i>
+        </div>
+      </div>
+
+      <div class="info-section">Acciones</div>
+      <button class="info-action"><i class="bi bi-person-plus"></i> Agregar miembro</button>
+      <button class="info-action"><i class="bi bi-bell-slash"></i> Silenciar grupo</button>
+      <button class="info-action"><i class="bi bi-search"></i> Buscar en el chat</button>
+      <button class="info-action danger"><i class="bi bi-box-arrow-right"></i> Salir del grupo</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const currentUser = JSON.parse(localStorage.getItem('current_user') ||
+  '{"id":"1","name":"Alvaro Garula"}');
+
+const REPLIES = [
+  'Entendido, lo actualizo en el tablero',
+  '👍 Perfecto!',
+  'Gracias, lo reviso ahora mismo',
+  'Ok, lo tengo en cuenta para el próximo sprint',
+  'Excelente trabajo equipo!',
+  'Lo marco como hecho en Jira',
+  'Voy a revisar el log del servidor',
+];
+
+const SENDERS = [
+  { name:'Maria Lopez',   color:'#185FA5', bg:'#FBEAF0', av:'ML', initials:'ML' },
+  { name:'Carlos Ramirez',color:'#3C3489', bg:'#EEEDFE', av:'CR', initials:'CR' },
+  { name:'Juan Perez',    color:'#0F6E56', bg:'#E1F5EE', av:'JP', initials:'JP' },
+];
+
+let typingTimeout;
+
+function togglePanel() {
+  const panel = document.getElementById('info-panel');
+  panel.classList.toggle('show');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+
+  appendMessage({
+    type:    'out',
+    content: text,
+    time:    now(),
+    read:    false,
+  });
+
+  scrollBottom();
+  simulateReply();
+}
+
+function appendMessage(msg) {
+  const msgs = document.getElementById('messages');
+
+  // Quitar typing si existe
+  const typing = document.getElementById('typing-wrap');
+  msgs.removeChild(typing);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'mwrap ' + msg.type;
+
+  if (msg.type === 'out') {
+    wrap.innerHTML = `
+      <div class="bubble out">
+        ${escHtml(msg.content)}
+        <div class="msg-time out">
+          ${msg.time}
+          <i class="bi bi-check${msg.read ? '-all" style="color:#90cdf4' : '"'} style="font-size:12px"></i>
+        </div>
+      </div>`;
+  } else if (msg.type === 'in') {
+    wrap.innerHTML = `
+      <div class="sender-name" style="color:${msg.senderColor}">${msg.senderName}</div>
+      <div class="bubble in">
+        ${escHtml(msg.content)}
+        <div class="msg-time in">${msg.time}</div>
+      </div>`;
+  } else if (msg.type === 'sys') {
+    wrap.innerHTML = `<div class="bubble sys">${msg.content}</div>`;
+  }
+
+  msgs.appendChild(typing);
+  msgs.insertBefore(wrap, typing);
+  scrollBottom();
+}
+
+function simulateAttach() {
+  const msgs   = document.getElementById('messages');
+  const typing = document.getElementById('typing-wrap');
+  const wrap   = document.createElement('div');
+  wrap.className = 'mwrap out';
+  wrap.innerHTML = `
+    <div class="bubble out">
+      <div class="attachment out">
+        <div class="att-icon" style="background:rgba(255,255,255,.2);color:#fff">
+          <i class="bi bi-file-earmark-text" style="font-size:16px"></i>
+        </div>
+        <div>
+          <div class="att-name" style="color:#fff">documento_${Date.now()}.pdf</div>
+          <div class="att-size" style="color:rgba(255,255,255,.65)">345 KB · PDF</div>
+        </div>
+        <i class="bi bi-download ms-auto" style="color:rgba(255,255,255,.65);font-size:14px"></i>
+      </div>
+      <div class="msg-time out" style="margin-top:6px">
+        ${now()} <i class="bi bi-check" style="font-size:12px"></i>
+      </div>
+    </div>`;
+  msgs.insertBefore(wrap, typing);
+  scrollBottom();
+  simulateReply();
+}
+
+function simulateReply() {
+  const sender = SENDERS[Math.floor(Math.random() * SENDERS.length)];
+  const delay  = 1200 + Math.random() * 1000;
+
+  document.getElementById('nav-status').textContent = sender.name + ' está escribiendo...';
+  document.getElementById('typing-wrap').style.display = 'flex';
+  scrollBottom();
+
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    document.getElementById('typing-wrap').style.display = 'none';
+    document.getElementById('nav-status').textContent = 'Maria, Carlos, Alvaro y 2 más';
+
+    appendMessage({
+      type:        'in',
+      senderName:  sender.name,
+      senderColor: sender.color,
+      content:     REPLIES[Math.floor(Math.random() * REPLIES.length)],
+      time:        now(),
+    });
+  }, delay + 1500);
+}
+
+function scrollBottom() {
+  const msgs = document.getElementById('messages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function now() {
+  const d = new Date();
+  return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+scrollBottom();
+</script>
+</body>
+</html>
