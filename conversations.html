@@ -3,15 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ChatEmpresa — Conversaciones</title>
+  <title>NexoLab — Conversaciones</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
   <style>
-    :root { --primary: #185FA5; --primary-dark: #0C447C; --primary-light: #B5D4F4; --bg: #F0F4F9; }
-    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
-
-    /* Navbar */
-    .navbar { background: var(--primary) !important; }
     .navbar-brand { color: #fff !important; font-weight: 600; font-size: 17px; }
     .user-initials {
       width: 34px; height: 34px; border-radius: 50%;
@@ -37,71 +33,22 @@
 
     /* Tarjeta de conversación */
     .conv-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
       display: flex;
       align-items: center;
       gap: 14px;
       cursor: pointer;
       transition: box-shadow .15s, transform .1s;
-      border: 0.5px solid #e8e8e8;
-      text-decoration: none;
-      color: inherit;
-    }
-    .conv-card:hover { box-shadow: 0 4px 16px rgba(24,95,165,.1); transform: translateY(-1px); }
-
-    /* Avatar */
-    .avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px; font-weight: 600; flex-shrink: 0; position: relative;
-    }
-    .avatar.group   { background: #E6F1FB; color: #0C447C; }
-    .avatar.private { background: #EEEDFE; color: #3C3489; }
-    .online-dot {
-      width: 12px; height: 12px; border-radius: 50%;
-      background: #22C55E; border: 2px solid #fff;
-      position: absolute; bottom: 0; right: 0;
-    }
-
-    /* Badge de mensajes no leídos */
-    .unread-badge {
-      background: var(--primary); color: #fff;
-      font-size: 11px; font-weight: 600;
-      border-radius: 10px; padding: 2px 7px;
-      min-width: 20px; text-align: center;
-    }
-    .group-tag {
-      background: #E6F1FB; color: #0C447C;
-      font-size: 10px; font-weight: 600;
-      border-radius: 4px; padding: 1px 6px;
     }
     .conv-name   { font-size: 15px; font-weight: 500; color: #1a1a2e; }
     .conv-preview{ font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
     .conv-time   { font-size: 11px; color: #aaa; white-space: nowrap; }
-
-    /* Sección title */
-    .section-label { font-size: 11px; font-weight: 600; color: #999; letter-spacing: .5px; text-transform: uppercase; }
-
-    /* Botón flotante nuevo chat */
-    .fab {
-      position: fixed; bottom: 28px; right: 28px;
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--primary); color: #fff;
-      border: none; font-size: 22px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(24,95,165,.35);
-      cursor: pointer; transition: background .2s, transform .1s;
-    }
-    .fab:hover { background: var(--primary-dark); transform: scale(1.08); }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand px-3 py-2">
-    <span class="navbar-brand">ChatEmpresa</span>
+    <span class="navbar-brand">NexoLab</span>
     <div class="ms-auto d-flex align-items-center gap-2">
       <div class="user-initials" id="nav-initials">AG</div>
       <a href="profile.html" class="btn btn-sm btn-link p-0" style="color:#B5D4F4">
@@ -283,5 +230,16 @@
     // Refrescar cada 5 segundos
     setInterval(loadConversations, 5000);
   </script>
+
+  <!-- Footer -->
+  <footer class="text-center py-3 text-muted" style="font-size: 12px; background: #fff; border-top: 1px solid #e0e0e0;">
+    <div class="container">
+      <p>&copy; 2026 NexoLab. Todos los derechos reservados.</p>
+      <p>
+        <a href="#" style="color: var(--primary); text-decoration: none;">Términos de uso</a> |
+        <a href="#" style="color: var(--primary); text-decoration: none;">Política de privacidad</a>
+      </p>
+    </div>
+  </footer>
 </body>
 </html>

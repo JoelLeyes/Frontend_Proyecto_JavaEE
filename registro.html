@@ -3,23 +3,16 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ChatEmpresa — Crear cuenta</title>
+  <title>NexoLab — Crear cuenta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
   <style>
-    :root {
-      --primary:      #185FA5;
-      --primary-dark: #0C447C;
-      --primary-light:#B5D4F4;
-      --bg:           #F0F4F9;
-    }
     body {
-      background: var(--bg);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Segoe UI', sans-serif;
       padding: 24px 16px;
     }
     .register-card {
@@ -30,14 +23,6 @@
       max-width: 420px;
       box-shadow: 0 4px 24px rgba(24,95,165,.10);
     }
-    .logo-box {
-      width: 60px; height: 60px;
-      background: var(--primary);
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 12px;
-    }
-    .logo-box span { color:#fff; font-size:20px; font-weight:700; }
 
     /* Barra de pasos */
     .step-bar { display:flex; align-items:center; margin-bottom:24px; }
@@ -52,33 +37,6 @@
     .step-line { flex:1; height:2px; background:#e9ecef; transition:background .3s; }
     .step-line.done { background:var(--primary); }
     .step-label { font-size:10px; text-align:center; margin-top:4px; color:#aaa; }
-
-    /* Inputs */
-    .form-control:focus, .form-select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(24,95,165,.12);
-    }
-    .form-label { font-size:13px; font-weight:500; color:#444; margin-bottom:4px; }
-
-    /* Botones */
-    .btn-primary-custom {
-      background: var(--primary); border:none;
-      border-radius:10px; padding:12px;
-      font-size:15px; font-weight:500;
-      width:100%; color:#fff;
-      transition: background .2s;
-    }
-    .btn-primary-custom:hover { background: var(--primary-dark); }
-    .btn-primary-custom:disabled { background:#b0c4d8; cursor:default; }
-    .btn-google {
-      width:100%; background:#fff;
-      border:1px solid #ddd; border-radius:10px;
-      padding:10px; font-size:13px; cursor:pointer;
-      color:#333; display:flex; align-items:center;
-      justify-content:center; gap:10px;
-      transition: background .15s;
-    }
-    .btn-google:hover { background:#f8f9fa; }
 
     /* Fortaleza de contraseña */
     .strength-bar {
@@ -113,13 +71,6 @@
     }
     .custom-check.checked { background:var(--primary); border-color:var(--primary); }
 
-    /* Divider */
-    .divider-text {
-      display:flex; align-items:center; gap:10px;
-      color:#aaa; font-size:12px; margin:14px 0;
-    }
-    .divider-text hr { flex:1; border-color:#eee; }
-
     /* Pantalla de éxito */
     .success-icon {
       width:72px; height:72px; border-radius:50%;
@@ -131,19 +82,16 @@
     /* Pasos */
     .step-panel { display:none; }
     .step-panel.active { display:block; }
-
-    .link-login { font-size:13px; color:#666; text-align:center; margin-top:12px; }
-    .link-login a { color:var(--primary); text-decoration:none; font-weight:500; }
-    .link-login a:hover { text-decoration:underline; }
   </style>
+
 </head>
 <body>
 <div class="register-card">
 
   <!-- Logo -->
   <div class="text-center mb-3">
-    <div class="logo-box"><span>CX</span></div>
-    <h5 class="fw-semibold mb-0">ChatEmpresa</h5>
+    <div class="logo-box"><span>NL</span></div>
+    <h5 class="fw-semibold mb-0">NexoLab</h5>
     <p class="text-muted mb-0" style="font-size:13px">Registrate para comenzar</p>
   </div>
 
@@ -212,18 +160,6 @@
     </div>
 
     <button class="btn-primary-custom mb-3" onclick="goStep(2)">Continuar</button>
-
-    <div class="divider-text"><hr/>o registrate con<hr/></div>
-
-    <button class="btn-google mb-3" type="button">
-      <svg width="18" height="18" viewBox="0 0 24 24">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
-      Continuar con Google
-    </button>
 
     <div class="link-login">¿Ya tenés cuenta? <a href="login.html">Ingresar</a></div>
   </div>
@@ -315,7 +251,7 @@
       <div style="font-size:12px;color:#555;line-height:1.5">
         Acepto los <a href="#" style="color:var(--primary)">Términos de uso</a>
         y la <a href="#" style="color:var(--primary)">Política de privacidad</a>
-        de ChatEmpresa. Entiendo que mis mensajes serán almacenados de forma segura.
+        de NexoLab. Entiendo que mis mensajes serán almacenados de forma segura.
       </div>
     </div>
 

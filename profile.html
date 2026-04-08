@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ChatEmpresa — Perfil</title>
+  <title>NexoLab — Perfil</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
   <style>
-    :root { --primary: #185FA5; --primary-dark: #0C447C; --primary-light: #B5D4F4; --bg: #F0F4F9; }
-    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
-
     .profile-header {
       background: var(--primary);
       padding: 28px 20px 32px;
@@ -33,9 +31,6 @@
       padding: 3px 12px; margin-top: 6px;
     }
 
-    .section-card { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
-    .section-label { font-size: 11px; font-weight: 600; color: #999; letter-spacing: .5px; text-transform: uppercase; padding: 12px 16px 4px; }
-
     .profile-row {
       display: flex; align-items: center; gap: 14px;
       padding: 14px 16px;
@@ -56,11 +51,6 @@
     .row-value { font-size: 12px; color: #888; margin-top: 1px; }
     .row-danger .row-label { color: #dc3545; }
     .row-danger .row-icon  { background: #fff0f0; color: #dc3545; }
-
-    .navbar { background: var(--primary) !important; }
-    .back-link { color: var(--primary-light) !important; text-decoration: none; font-size: 20px; }
-    .back-link:hover { color: #fff !important; }
-    .navbar-title { color: #fff; font-size: 16px; font-weight: 500; }
   </style>
 </head>
 <body>
@@ -140,7 +130,7 @@
       </div>
     </div>
 
-    <p class="text-center text-muted mt-3" style="font-size:11px">ChatEmpresa v1.0.0</p>
+    <p class="text-center text-muted mt-3" style="font-size:11px">NexoLab v1.0.0</p>
   </div>
 
   <!-- Modal confirmación logout -->
@@ -183,5 +173,16 @@
     function logout()        { logoutModal.show(); }
     function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
   </script>
+
+  <!-- Footer -->
+  <footer class="text-center py-3 text-muted" style="font-size: 12px; background: #fff; border-top: 1px solid #e0e0e0;">
+    <div class="container">
+      <p>&copy; 2026 NexoLab. Todos los derechos reservados.</p>
+      <p>
+        <a href="#" style="color: var(--primary); text-decoration: none;">Términos de uso</a> |
+        <a href="#" style="color: var(--primary); text-decoration: none;">Política de privacidad</a>
+      </p>
+    </div>
+  </footer>
 </body>
 </html>
