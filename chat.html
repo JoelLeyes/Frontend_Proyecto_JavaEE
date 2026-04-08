@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatEmpresa — Chat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    :root { --primary: #185FA5; --primary-dark: #0C447C; --primary-light: #B5D4F4; --bg: #F0F4F9; }
+    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Navbar chat */
+    .chat-navbar { background: var(--primary); padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .back-btn { color: var(--primary-light); font-size: 20px; text-decoration: none; }
+    .back-btn:hover { color: #fff; }
+    .chat-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary-dark); color: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+    .chat-title { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.2; }
+    .chat-sub   { color: var(--primary-light); font-size: 11px; }
+
+    /* Área de mensajes */
+    .messages-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+
+    /* Burbujas */
+    .msg-wrap { display: flex; flex-direction: column; }
+    .msg-wrap.out { align-items: flex-end; }
+    .msg-wrap.in  { align-items: flex-start; }
+    .bubble {
+      max-width: 72%;
+      padding: 9px 13px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .bubble.out { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    .bubble.in  { background: #fff; color: #1a1a2e; border-bottom-left-radius: 4px; border: 0.5px solid #e0e0e0; }
+    .msg-sender { font-size: 11px; font-weight: 600; color: var(--primary); margin-bottom: 3px; }
+    .msg-time   { font-size: 10px; margin-top: 4px; text-align: right; }
+    .msg-time.out { color: rgba(255,255,255,.65); }
+    .msg-time.in  { color: #aaa; }
+
+    /* Separador de fecha */
+    .date-sep { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+    .date-sep span { font-size: 11px; color: #aaa; white-space: nowrap; }
+    .date-sep hr { flex: 1; border-color: #ddd; margin: 0; }
+
+    /* Adjunto */
+    .attachment-bubble {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.15);
+      border-radius: 8px; padding: 8px 10px; margin-top: 6px;
+    }
+    .attachment-bubble.in { background: #F0F4F9; }
+    .file-icon { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+    /* Barra de entrada */
+    .input-bar { background: #fff; border-top: 1px solid #e0e0e0; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .msg-input { flex: 1; border: 1px solid #ddd; border-radius: 24px; padding: 9px 16px; font-size: 14px; outline: none; resize: none; max-height: 100px; }
+    .msg-input:focus { border-color: var(--primary); }
+    .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; flex-shrink: 0; transition: background .2s; }
+    .send-btn:hover { background: var(--primary-dark); }
+    .attach-btn { color: #aaa; font-size: 20px; background: none; border: none; cursor: pointer; padding: 4px; }
+    .attach-btn:hover { color: var(--primary); }
+
+    /* Scrollbar delgado */
+    .messages-area::-webkit-scrollbar { width: 4px; }
+    .messages-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="chat-navbar">
+    <a href="conversations.html" class="back-btn"><i class="bi bi-arrow-left"></i></a>
+    <div class="chat-avatar" id="nav-avatar">DS</div>
+    <div>
+      <div class="chat-title" id="nav-title">Desarrollo de Software</div>
+      <div class="chat-sub"  id="nav-sub">5 participantes</div>
+    </div>
+    <div class="ms-auto d-flex gap-2" style="color:var(--primary-light)">
+      <button class="btn btn-link p-0" style="color:var(--primary-light)"><i class="bi bi-search"></i></button>
+      <button class="btn btn-link p-0" style="color:var(--primary-light)"><i class="bi bi-three-dots-vertical"></i></button>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="messages-area" id="messages-area">
+    <!-- Se genera con JS -->
+  </div>
+
+  <!-- Barra de entrada -->
+  <div class="input-bar">
+    <button class="attach-btn" title="Adjuntar archivo">
+      <i class="bi bi-paperclip"></i>
+    </button>
+    <textarea class="msg-input" id="msg-input" placeholder="Escribe un mensaje..."
+              rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" onclick="sendMessage()" id="send-btn">
+      <i class="bi bi-send-fill"></i>
+    </button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Leer parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const convId   = params.get('id')   || '1';
+    const convName = params.get('name') || 'Conversación';
+    const convType = params.get('type') || 'GROUP';
+    const isGroup  = convType === 'GROUP';
+
+    // Info del usuario actual
+    const currentUser = JSON.parse(localStorage.getItem('current_user') || '{"id":"1","name":"Alvaro Garula"}');
+
+    // Actualizar navbar
+    document.getElementById('nav-title').textContent = convName;
+    document.getElementById('nav-sub').textContent   = isGroup ? '5 participantes' : 'en línea';
+    document.getElementById('nav-avatar').textContent = initials(convName);
+
+    // Mensajes demo
+    let messages = [
+      { id:'1', senderId:'2', senderName:'Maria Lopez',  content:'Suban el nuevo build al servidor de pruebas', type:'TEXT',  sentAt: new Date(Date.now()-3600000).toISOString(), read:true },
+      { id:'2', senderId:'3', senderName:'Carlos R.',    content:'Ya lo tengo listo, subo en 5 min',            type:'TEXT',  sentAt: new Date(Date.now()-3200000).toISOString(), read:true },
+      { id:'3', senderId:'1', senderName:'Alvaro Garula',content:'Perfecto, yo hago el deploy al EC2',          type:'TEXT',  sentAt: new Date(Date.now()-2800000).toISOString(), read:true },
+      { id:'4', senderId:'2', senderName:'Maria Lopez',  content:'Acá el informe del sprint', type:'FILE', sentAt: new Date(Date.now()-2400000).toISOString(), read:true,
+        attachment:{ filename:'informe_sprint.pdf', fileType:'PDF', urlS3:'#' } },
+      { id:'5', senderId:'1', senderName:'Alvaro Garula',content:'Gracias, lo reviso ahora', type:'TEXT', sentAt: new Date(Date.now()-2000000).toISOString(), read:false },
+    ];
+
+    let lastPollTime = new Date();
+
+    function renderMessages() {
+      const area = document.getElementById('messages-area');
+      let html = '';
+      let lastDate = null;
+
+      messages.forEach(msg => {
+        const mine    = msg.senderId === currentUser.id;
+        const sentAt  = new Date(msg.sentAt);
+        const dateStr = sentAt.toDateString();
+
+        // Separador de fecha
+        if (dateStr !== lastDate) {
+          lastDate = dateStr;
+          html += `<div class="date-sep"><hr/><span>${formatDate(sentAt)}</span><hr/></div>`;
+        }
+
+        // Nombre del emisor en grupos
+        const sender = isGroup && !mine
+          ? `<div class="msg-sender">${msg.senderName}</div>` : '';
+
+        // Tilde de lectura
+        const ticks = mine
+          ? `<i class="bi bi-check${msg.read ? '-all text-info' : ''}" style="font-size:11px"></i>` : '';
+
+        // Adjunto
+        let attachHtml = '';
+        if (msg.attachment) {
+          const isImg = msg.attachment.fileType === 'IMAGE';
+          attachHtml = `
+            <div class="attachment-bubble ${mine ? '' : 'in'}">
+              <div class="file-icon" style="background:${mine ? 'rgba(255,255,255,.2)' : '#E6F1FB'}">
+                <i class="bi bi-${isImg ? 'image' : 'file-earmark-pdf'}" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:500">${msg.attachment.filename}</div>
+                <div style="font-size:10px;opacity:.7">${msg.attachment.fileType}</div>
+              </div>
+            </div>`;
+        }
+
+        html += `
+          <div class="msg-wrap ${mine ? 'out' : 'in'}">
+            ${sender}
+            <div class="bubble ${mine ? 'out' : 'in'}">
+              ${msg.content}
+              ${attachHtml}
+              <div class="msg-time ${mine ? 'out' : 'in'}">
+                ${formatTime(sentAt)} ${ticks}
+              </div>
+            </div>
+          </div>`;
+      });
+
+      area.innerHTML = html;
+      scrollBottom();
+    }
+
+    function scrollBottom() {
+      const area = document.getElementById('messages-area');
+      area.scrollTop = area.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('msg-input');
+      const text  = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      autoResize(input);
+
+      const newMsg = {
+        id:         Date.now().toString(),
+        senderId:   currentUser.id,
+        senderName: currentUser.name,
+        content:    text,
+        type:       'TEXT',
+        sentAt:     new Date().toISOString(),
+        read:       false,
+      };
+
+      // Agregar localmente de inmediato
+      messages.push(newMsg);
+      renderMessages();
+
+      // Enviar al backend
+      try {
+        const token = localStorage.getItem('jwt_token');
+        await fetch(`http://localhost:8080/conversations/${convId}/messages`, {
+          method:  'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+          body:    JSON.stringify({ content: text, type: 'TEXT' })
+        });
+      } catch { /* backend no disponible aún, el mensaje ya se muestra localmente */ }
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    }
+
+    // Polling: busca mensajes nuevos cada 3 segundos
+    async function pollMessages() {
+      try {
+        const token = localStorage.getItem('jwt_token');
+        const since = lastPollTime.toISOString();
+        const res   = await fetch(
+          `http://localhost:8080/conversations/${convId}/messages?since=${since}`,
+          { headers: { 'Authorization': 'Bearer ' + token } }
+        );
+        if (res.ok) {
+          const newMsgs = await res.json();
+          if (newMsgs.length > 0) {
+            messages = [...messages, ...newMsgs];
+            lastPollTime = new Date();
+            renderMessages();
+          }
+        }
+      } catch { /* sin backend, ok */ }
+    }
+
+    function initials(name) {
+      const parts = (name || '').trim().split(' ');
+      return parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : (name || 'U').substring(0, 2).toUpperCase();
+    }
+
+    function formatTime(dt) {
+      return dt.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function formatDate(dt) {
+      const now  = new Date();
+      const diff = Math.floor((now - dt) / 86400000);
+      if (diff === 0) return 'Hoy';
+      if (diff === 1) return 'Ayer';
+      return dt.toLocaleDateString('es', { day:'2-digit', month:'long' });
+    }
+
+    // Arrancar
+    renderMessages();
+    setInterval(pollMessages, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatEmpresa — Conversaciones</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    :root { --primary: #185FA5; --primary-dark: #0C447C; --primary-light: #B5D4F4; --bg: #F0F4F9; }
+    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
+
+    /* Navbar */
+    .navbar { background: var(--primary) !important; }
+    .navbar-brand { color: #fff !important; font-weight: 600; font-size: 17px; }
+    .user-initials {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--primary-dark);
+      color: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600;
+    }
+
+    /* Layout principal */
+    .main-layout { max-width: 860px; margin: 24px auto; padding: 0 16px; }
+
+    /* Search */
+    .search-box .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(24,95,165,.12);
+    }
+
+    /* Tabs */
+    .nav-tabs .nav-link { color: #888; border: none; border-bottom: 2px solid transparent; font-size: 14px; }
+    .nav-tabs .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; background: none; }
+    .nav-tabs { border-bottom: 1px solid #e0e0e0; }
+
+    /* Tarjeta de conversación */
+    .conv-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: box-shadow .15s, transform .1s;
+      border: 0.5px solid #e8e8e8;
+      text-decoration: none;
+      color: inherit;
+    }
+    .conv-card:hover { box-shadow: 0 4px 16px rgba(24,95,165,.1); transform: translateY(-1px); }
+
+    /* Avatar */
+    .avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600; flex-shrink: 0; position: relative;
+    }
+    .avatar.group   { background: #E6F1FB; color: #0C447C; }
+    .avatar.private { background: #EEEDFE; color: #3C3489; }
+    .online-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #22C55E; border: 2px solid #fff;
+      position: absolute; bottom: 0; right: 0;
+    }
+
+    /* Badge de mensajes no leídos */
+    .unread-badge {
+      background: var(--primary); color: #fff;
+      font-size: 11px; font-weight: 600;
+      border-radius: 10px; padding: 2px 7px;
+      min-width: 20px; text-align: center;
+    }
+    .group-tag {
+      background: #E6F1FB; color: #0C447C;
+      font-size: 10px; font-weight: 600;
+      border-radius: 4px; padding: 1px 6px;
+    }
+    .conv-name   { font-size: 15px; font-weight: 500; color: #1a1a2e; }
+    .conv-preview{ font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+    .conv-time   { font-size: 11px; color: #aaa; white-space: nowrap; }
+
+    /* Sección title */
+    .section-label { font-size: 11px; font-weight: 600; color: #999; letter-spacing: .5px; text-transform: uppercase; }
+
+    /* Botón flotante nuevo chat */
+    .fab {
+      position: fixed; bottom: 28px; right: 28px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      border: none; font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(24,95,165,.35);
+      cursor: pointer; transition: background .2s, transform .1s;
+    }
+    .fab:hover { background: var(--primary-dark); transform: scale(1.08); }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand px-3 py-2">
+    <span class="navbar-brand">ChatEmpresa</span>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <div class="user-initials" id="nav-initials">AG</div>
+      <a href="profile.html" class="btn btn-sm btn-link p-0" style="color:#B5D4F4">
+        <i class="bi bi-person-circle fs-5"></i>
+      </a>
+      <button class="btn btn-sm btn-link p-0" onclick="logout()" style="color:#B5D4F4" title="Cerrar sesión">
+        <i class="bi bi-box-arrow-right fs-5"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-layout">
+
+    <!-- Buscador -->
+    <div class="search-box mb-3">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" class="form-control border-start-0" placeholder="Buscar conversaciones..."
+               id="search-input" oninput="filterConvs()"/>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" id="conv-tabs">
+      <li class="nav-item">
+        <button class="nav-link active px-4" onclick="filterTab('all', this)">Todos</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link px-4" onclick="filterTab('group', this)">Grupos</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link px-4" onclick="filterTab('private', this)">Directos</button>
+      </li>
+    </ul>
+
+    <!-- Lista de conversaciones -->
+    <div id="conv-list" class="d-flex flex-column gap-2">
+      <!-- Se genera con JS -->
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" style="--bs-primary: var(--primary)"></div>
+      <p class="text-muted mt-2" style="font-size:13px">Cargando conversaciones...</p>
+    </div>
+
+    <!-- Vacío -->
+    <div id="empty" class="text-center py-5 d-none">
+      <i class="bi bi-chat-dots" style="font-size:48px;color:#ddd"></i>
+      <p class="text-muted mt-2">Sin conversaciones aún</p>
+    </div>
+  </div>
+
+  <!-- Botón nuevo chat -->
+  <button class="fab" title="Nueva conversación">
+    <i class="bi bi-plus"></i>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Datos demo para desarrollar sin backend
+    const DEMO_CONVS = [
+      { id:'1', name:'Desarrollo de Software', type:'GROUP',   lastMessage:'Maria: subieron el build nuevo', lastMessageAt:'2024-01-15T10:42:00', unreadCount:3 },
+      { id:'2', name:'Equipo UX',              type:'GROUP',   lastMessage:'Revisen el Figma actualizado',   lastMessageAt:'2024-01-15T09:15:00', unreadCount:0 },
+      { id:'3', name:'Gerencia General',       type:'GROUP',   lastMessage:'Reunión mañana a las 9am',       lastMessageAt:'2024-01-14T17:30:00', unreadCount:1 },
+      { id:'4', name:'Carlos Ramirez',         type:'PRIVATE', lastMessage:'OK, lo reviso ahora mismo',      lastMessageAt:'2024-01-14T16:00:00', unreadCount:0, online:true },
+      { id:'5', name:'Lucia Martinez',         type:'PRIVATE', lastMessage:'Adjunto el informe mensual',     lastMessageAt:'2024-01-13T11:20:00', unreadCount:1 },
+      { id:'6', name:'Juan Perez',             type:'PRIVATE', lastMessage:'Gracias por la info',            lastMessageAt:'2024-01-12T09:00:00', unreadCount:0 },
+    ];
+
+    let allConvs    = [];
+    let currentTab  = 'all';
+
+    // Cargar usuario
+    const user = JSON.parse(localStorage.getItem('current_user') || '{"name":"Usuario","id":"1"}');
+    document.getElementById('nav-initials').textContent = initials(user.name);
+
+    async function loadConversations() {
+      try {
+        const token = localStorage.getItem('jwt_token');
+        const res   = await fetch('http://localhost:8080/conversations', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) allConvs = await res.json();
+        else        allConvs = DEMO_CONVS;
+      } catch {
+        allConvs = DEMO_CONVS; // usar datos demo si no hay backend
+      }
+      document.getElementById('loading').classList.add('d-none');
+      renderConvs();
+    }
+
+    function renderConvs() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      let filtered = allConvs.filter(c => {
+        const matchTab  = currentTab === 'all' ||
+                          (currentTab === 'group'   && c.type === 'GROUP') ||
+                          (currentTab === 'private' && c.type === 'PRIVATE');
+        const matchSearch = c.name.toLowerCase().includes(search) ||
+                            (c.lastMessage || '').toLowerCase().includes(search);
+        return matchTab && matchSearch;
+      });
+
+      const list = document.getElementById('conv-list');
+      const empty = document.getElementById('empty');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('d-none');
+        return;
+      }
+      empty.classList.add('d-none');
+      list.innerHTML = filtered.map(conv => convCard(conv)).join('');
+    }
+
+    function convCard(conv) {
+      const isGroup   = conv.type === 'GROUP';
+      const avatarCls = isGroup ? 'group' : 'private';
+      const ini       = initials(conv.name);
+      const time      = formatTime(conv.lastMessageAt);
+      const badge     = conv.unreadCount > 0
+        ? `<span class="unread-badge">${conv.unreadCount}</span>` : '';
+      const onlineDot = conv.online ? '<div class="online-dot"></div>' : '';
+      const groupTag  = isGroup ? '<span class="group-tag ms-1">grupo</span>' : '';
+
+      return `
+        <a href="chat.html?id=${conv.id}&name=${encodeURIComponent(conv.name)}&type=${conv.type}"
+           class="conv-card">
+          <div class="avatar ${avatarCls}">${ini}${onlineDot}</div>
+          <div class="flex-grow-1 overflow-hidden">
+            <div class="d-flex align-items-center gap-1">
+              <span class="conv-name">${conv.name}</span>${groupTag}
+            </div>
+            <div class="conv-preview">${conv.lastMessage || 'Sin mensajes aún'}</div>
+          </div>
+          <div class="d-flex flex-column align-items-end gap-1">
+            <span class="conv-time">${time}</span>
+            ${badge}
+          </div>
+        </a>`;
+    }
+
+    function filterTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll('#conv-tabs .nav-link').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderConvs();
+    }
+
+    function filterConvs() { renderConvs(); }
+
+    function initials(name) {
+      const parts = (name || '').trim().split(' ');
+      return parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : (name || 'U').substring(0, 2).toUpperCase();
+    }
+
+    function formatTime(dt) {
+      if (!dt) return '';
+      const d    = new Date(dt);
+      const now  = new Date();
+      const diff = Math.floor((now - d) / 86400000);
+      if (diff === 0) return d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+      if (diff === 1) return 'ayer';
+      if (diff < 7)  return d.toLocaleDateString('es', { weekday:'short' });
+      return d.toLocaleDateString('es', { day:'2-digit', month:'2-digit' });
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    loadConversations();
+
+    // Refrescar cada 5 segundos
+    setInterval(loadConversations, 5000);
+  </script>
+</body>
+</html>

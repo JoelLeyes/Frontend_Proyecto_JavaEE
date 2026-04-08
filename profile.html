@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatEmpresa — Perfil</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    :root { --primary: #185FA5; --primary-dark: #0C447C; --primary-light: #B5D4F4; --bg: #F0F4F9; }
+    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
+
+    .profile-header {
+      background: var(--primary);
+      padding: 28px 20px 32px;
+      text-align: center;
+    }
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--primary-dark);
+      color: var(--primary-light);
+      font-size: 26px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      border: 3px solid rgba(255,255,255,.2);
+    }
+    .profile-name { color: #fff; font-size: 20px; font-weight: 600; }
+    .profile-role {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      color: var(--primary-light);
+      font-size: 12px; border-radius: 12px;
+      padding: 3px 12px; margin-top: 6px;
+    }
+
+    .section-card { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
+    .section-label { font-size: 11px; font-weight: 600; color: #999; letter-spacing: .5px; text-transform: uppercase; padding: 12px 16px 4px; }
+
+    .profile-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 0.5px solid #f0f0f0;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: background .1s;
+    }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-row:hover { background: #fafafa; }
+    .row-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .row-label { font-size: 14px; color: #1a1a2e; }
+    .row-value { font-size: 12px; color: #888; margin-top: 1px; }
+    .row-danger .row-label { color: #dc3545; }
+    .row-danger .row-icon  { background: #fff0f0; color: #dc3545; }
+
+    .navbar { background: var(--primary) !important; }
+    .back-link { color: var(--primary-light) !important; text-decoration: none; font-size: 20px; }
+    .back-link:hover { color: #fff !important; }
+    .navbar-title { color: #fff; font-size: 16px; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar px-3 py-2 d-flex align-items-center gap-3">
+    <a href="conversations.html" class="back-link"><i class="bi bi-arrow-left"></i></a>
+    <span class="navbar-title">Mi perfil</span>
+  </nav>
+
+  <!-- Header con avatar -->
+  <div class="profile-header">
+    <div class="profile-avatar" id="profile-avatar">AG</div>
+    <div class="profile-name"  id="profile-name">Alvaro Garula</div>
+    <div class="profile-role"  id="profile-role">Desarrollador</div>
+  </div>
+
+  <div class="container" style="max-width:560px;padding:16px">
+
+    <!-- Información -->
+    <div class="section-card">
+      <div class="section-label">Información</div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#E6F1FB;color:#185FA5"><i class="bi bi-envelope"></i></div>
+        <div>
+          <div class="row-label" id="profile-email">alvaro@empresa.com</div>
+          <div class="row-value">Correo electrónico</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#EEEDFE;color:#3C3489"><i class="bi bi-building"></i></div>
+        <div>
+          <div class="row-label">Tecnología</div>
+          <div class="row-value">Departamento</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#E1F5EE;color:#085041"><i class="bi bi-person-badge"></i></div>
+        <div>
+          <div class="row-label" id="profile-role-row">Desarrollador</div>
+          <div class="row-value">Rol en la empresa</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuenta -->
+    <div class="section-card">
+      <div class="section-label">Cuenta</div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#FFF8E1;color:#F59E0B"><i class="bi bi-lock"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Cambiar contraseña</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+      </div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#F0F4F9;color:#888"><i class="bi bi-bell"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Notificaciones</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+      </div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#F0F4F9;color:#888"><i class="bi bi-shield-check"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Privacidad</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+      </div>
+    </div>
+
+    <!-- Cerrar sesión -->
+    <div class="section-card">
+      <div class="profile-row row-danger" onclick="logout()">
+        <div class="row-icon"><i class="bi bi-box-arrow-right"></i></div>
+        <div class="row-label">Cerrar sesión</div>
+      </div>
+    </div>
+
+    <p class="text-center text-muted mt-3" style="font-size:11px">ChatEmpresa v1.0.0</p>
+  </div>
+
+  <!-- Modal confirmación logout -->
+  <div class="modal fade" id="logout-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 rounded-3">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-semibold">Cerrar sesión</h6>
+        </div>
+        <div class="modal-body py-2">
+          <p class="text-muted mb-0" style="font-size:14px">¿Estás seguro que querés cerrar sesión?</p>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="confirmLogout()">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem('current_user') || '{"name":"Usuario","email":"","role":""}');
+
+    function initials(name) {
+      const parts = (name || '').trim().split(' ');
+      return parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : (name || 'U').substring(0, 2).toUpperCase();
+    }
+
+    document.getElementById('profile-avatar').textContent  = initials(user.name);
+    document.getElementById('profile-name').textContent    = user.name;
+    document.getElementById('profile-email').textContent   = user.email || 'sin correo';
+    document.getElementById('profile-role').textContent    = user.role  || 'Usuario';
+    document.getElementById('profile-role-row').textContent= user.role  || 'Usuario';
+
+    const logoutModal = new bootstrap.Modal(document.getElementById('logout-modal'));
+
+    function logout()        { logoutModal.show(); }
+    function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+  </script>
+</body>
+</html>

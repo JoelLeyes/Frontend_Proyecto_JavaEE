@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatEmpresa — Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary:       #185FA5;
+      --primary-dark:  #0C447C;
+      --primary-light: #B5D4F4;
+      --bg:            #F0F4F9;
+    }
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 24px rgba(24,95,165,0.10);
+    }
+    .logo-box {
+      width: 64px; height: 64px;
+      background: var(--primary);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .logo-box span { color: #fff; font-size: 22px; font-weight: 700; }
+    .btn-primary-custom {
+      background: var(--primary);
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      width: 100%;
+      color: #fff;
+      transition: background .2s;
+    }
+    .btn-primary-custom:hover { background: var(--primary-dark); }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(24,95,165,.15);
+    }
+    .form-label { font-size: 13px; font-weight: 500; color: #444; }
+    .link-forgot { font-size: 13px; color: var(--primary); text-decoration: none; }
+    .link-forgot:hover { text-decoration: underline; }
+    .alert-danger { font-size: 13px; border-radius: 8px; }
+    .spinner-border-sm { width: 16px; height: 16px; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="text-center mb-4">
+      <div class="logo-box"><span>CX</span></div>
+      <h4 class="fw-semibold mb-1">NexoLab</h4>
+      <p class="text-muted" style="font-size:13px">Comunicación interna empresarial</p>
+    </div>
+
+    <!-- Alerta de error -->
+    <div id="error-box" class="alert alert-danger d-none" role="alert">
+      <i class="bi bi-exclamation-circle me-2"></i>
+      <span id="error-msg">Credenciales incorrectas</span>
+    </div>
+
+    <!-- Formulario -->
+    <form id="login-form" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Correo electrónico</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-envelope text-muted"></i>
+          </span>
+          <input type="email" id="email" class="form-control border-start-0"
+                 placeholder="usuario@empresa.com" required/>
+        </div>
+        <div class="invalid-feedback">Ingresá un correo válido</div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Contraseña</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-lock text-muted"></i>
+          </span>
+          <input type="password" id="password" class="form-control border-start-0 border-end-0"
+                 placeholder="••••••••" required minlength="6"/>
+          <button type="button" class="input-group-text bg-light border-start-0"
+                  onclick="togglePass()" id="toggle-btn">
+            <i class="bi bi-eye" id="eye-icon"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback">Mínimo 6 caracteres</div>
+      </div>
+
+      <button type="submit" class="btn-primary-custom" id="login-btn">
+        <span id="btn-text">Ingresar</span>
+        <span id="btn-spinner" class="d-none">
+          <span class="spinner-border spinner-border-sm me-2"></span>Ingresando...
+        </span>
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="#" class="link-forgot">Olvidé mi contraseña</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function togglePass() {
+      const input = document.getElementById('password');
+      const icon  = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const errorBox = document.getElementById('error-box');
+      const errorMsg = document.getElementById('error-msg');
+
+      errorBox.classList.add('d-none');
+
+      if (!email || !email.includes('@') || password.length < 6) {
+        this.classList.add('was-validated');
+        return;
+      }
+
+      // Mostrar spinner
+      document.getElementById('btn-text').classList.add('d-none');
+      document.getElementById('btn-spinner').classList.remove('d-none');
+      document.getElementById('login-btn').disabled = true;
+
+      try {
+        const res = await fetch('http://localhost:8080/auth/login', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ email, password })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem('jwt_token',    data.token);
+          localStorage.setItem('current_user', JSON.stringify(data.user));
+          window.location.href = 'conversations.html';
+        } else {
+          const err = await res.json();
+          errorMsg.textContent = err.message || 'Credenciales incorrectas';
+          errorBox.classList.remove('d-none');
+        }
+      } catch {
+        // Backend no disponible aún — redirigir igual para desarrollo del frontend
+        localStorage.setItem('jwt_token', 'demo-token');
+        localStorage.setItem('current_user', JSON.stringify({
+          id: '1', name: 'Alvaro Garula', email: email, role: 'Desarrollador'
+        }));
+        window.location.href = 'conversations.html';
+      } finally {
+        document.getElementById('btn-text').classList.remove('d-none');
+        document.getElementById('btn-spinner').classList.add('d-none');
+        document.getElementById('login-btn').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
