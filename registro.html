@@ -138,20 +138,6 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Departamento</label>
-      <select class="form-select" id="f-dept">
-        <option value="">Seleccionar departamento...</option>
-        <option>Tecnología</option>
-        <option>Recursos Humanos</option>
-        <option>Ventas</option>
-        <option>Gerencia</option>
-        <option>Marketing</option>
-        <option>Finanzas</option>
-        <option>Operaciones</option>
-      </select>
-    </div>
-
-    <div class="mb-3">
       <label class="form-label">Teléfono <span class="text-muted fw-normal">(opcional)</span></label>
       <div class="input-group">
         <span class="input-group-text bg-light border-end-0"><i class="bi bi-phone text-muted"></i></span>
@@ -237,14 +223,6 @@
       </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Rol o cargo</label>
-      <div class="input-group">
-        <span class="input-group-text bg-light border-end-0"><i class="bi bi-briefcase text-muted"></i></span>
-        <input type="text" class="form-control border-start-0" id="f-role" placeholder="Ej: Desarrollador Java Senior"/>
-      </div>
-    </div>
-
     <!-- Términos -->
     <div class="d-flex align-items-start gap-2 mb-3 p-3 rounded" style="background:#f8f9fa">
       <div class="custom-check" id="terms-check" onclick="toggleTerms()"></div>
@@ -318,7 +296,6 @@ function validateStep(n) {
   if (n === 1) {
     const name  = document.getElementById('f-name').value.trim();
     const email = document.getElementById('f-email').value.trim();
-    const dept  = document.getElementById('f-dept').value;
     const alert = document.getElementById('alert-step1');
     if (!name || name.split(' ').length < 2) {
       showAlert('alert-step1', 'Ingresá tu nombre completo (nombre y apellido)');
@@ -326,10 +303,6 @@ function validateStep(n) {
     }
     if (!email || !email.includes('@') || !email.includes('.')) {
       showAlert('alert-step1', 'Ingresá un correo electrónico válido');
-      return false;
-    }
-    if (!dept) {
-      showAlert('alert-step1', 'Seleccioná tu departamento');
       return false;
     }
     alert.classList.add('d-none');
@@ -483,8 +456,6 @@ async function finishRegister() {
     name:     document.getElementById('f-name').value.trim(),
     email:    document.getElementById('f-email').value.trim(),
     password: document.getElementById('f-pwd').value,
-    dept:     document.getElementById('f-dept').value,
-    role:     document.getElementById('f-role').value.trim(),
   };
 
   try {

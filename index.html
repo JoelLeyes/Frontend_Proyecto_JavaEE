@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NexoLab — Bienvenido</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--bg) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .welcome-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 60px 40px;
+      text-align: center;
+      max-width: 500px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    .logo-box {
+      margin: 0 auto 20px;
+      width: 80px;
+      height: 80px;
+      font-size: 32px;
+    }
+    .welcome-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--primary);
+    }
+    .welcome-subtitle {
+      font-size: 1.1rem;
+      margin-bottom: 32px;
+      color: #666;
+    }
+    .btn-welcome {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      margin: 8px;
+      transition: all 0.3s ease;
+    }
+    .btn-welcome:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      color: #fff;
+    }
+    .btn-outline-welcome {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    .btn-outline-welcome:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div class="welcome-card">
+  <!-- Logo -->
+  <div class="logo-box"><span>NL</span></div>
+
+  <!-- Título -->
+  <h1 class="welcome-title">Bienvenido a NexoLab</h1>
+
+  <!-- Subtítulo -->
+  <p class="welcome-subtitle">
+    La plataforma de chat empresarial que conecta equipos y acelera la productividad.
+    Únete a nosotros y transforma la forma en que colaboras.
+  </p>
+
+  <!-- Botones -->
+  <div>
+    <a href="registro.html" class="btn-welcome">Comenzar registro</a>
+    <a href="login.html" class="btn-welcome btn-outline-welcome">Ya tengo cuenta</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
