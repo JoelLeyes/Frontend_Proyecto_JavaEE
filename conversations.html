@@ -177,7 +177,7 @@
       const groupTag  = isGroup ? '<span class="group-tag ms-1">grupo</span>' : '';
 
       return `
-        <a href="chat.html?id=${conv.id}&name=${encodeURIComponent(conv.name)}&type=${conv.type}"
+        <a href="${conv.type === 'GROUP' ? 'group_chat.html' : 'chat.html'}?id=${conv.id}&name=${encodeURIComponent(conv.name)}&type=${conv.type}"
            class="conv-card">
           <div class="avatar ${avatarCls}">${ini}${onlineDot}</div>
           <div class="flex-grow-1 overflow-hidden">
