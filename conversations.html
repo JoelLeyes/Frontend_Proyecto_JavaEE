@@ -131,7 +131,7 @@
     async function loadConversations() {
       try {
         const token = localStorage.getItem('jwt_token');
-        const res   = await fetch('http://localhost:8080/conversations', {
+        const res   = await fetch('/api/chats', {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (res.ok) allConvs = await res.json();

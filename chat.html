@@ -217,7 +217,7 @@
       // Enviar al backend
       try {
         const token = localStorage.getItem('jwt_token');
-        await fetch(`http://localhost:8080/conversations/${convId}/messages`, {
+        await fetch(`/api/chats/${convId}/messages`, {
           method:  'POST',
           headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
           body:    JSON.stringify({ content: text, type: 'TEXT' })
@@ -243,7 +243,7 @@
         const token = localStorage.getItem('jwt_token');
         const since = lastPollTime.toISOString();
         const res   = await fetch(
-          `http://localhost:8080/conversations/${convId}/messages?since=${since}`,
+          `/api/chats/${convId}/messages?since=${since}`,
           { headers: { 'Authorization': 'Bearer ' + token } }
         );
         if (res.ok) {
