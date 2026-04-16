@@ -124,18 +124,9 @@
 
         if (res.ok) {
           const data = await res.json();
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userId', data.user.id);
-          localStorage.setItem('userName', data.user.name);
-          localStorage.setItem('userEmail', data.user.email);
-          localStorage.setItem('userRole', data.user.role);
-          
-          // Redirigir según rol
-          if (data.user.role === 'ADMINISTRADOR') {
-            window.location.href = 'admin-panel.html';
-          } else {
-            window.location.href = 'conversations.html';
-          }
+          localStorage.setItem('jwt_token',    data.token);
+          localStorage.setItem('current_user', JSON.stringify(data.user));
+          window.location.href = 'conversations.html';
         } else {
           const err = await res.json();
           errorMsg.textContent = err.message || 'Credenciales incorrectas';
@@ -143,18 +134,11 @@
         }
       } catch {
         // Backend no disponible aún — redirigir igual para desarrollo del frontend
-        const isAdmin = email.includes('@admin') || email.includes('admin@');
-        localStorage.setItem('token', 'demo-token');
-        localStorage.setItem('userId', '1');
-        localStorage.setItem('userName', 'Alvaro Garula');
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('userRole', isAdmin ? 'ADMINISTRADOR' : 'USER');
-        
-        if (isAdmin) {
-          window.location.href = 'admin-panel.html';
-        } else {
-          window.location.href = 'conversations.html';
-        }
+        localStorage.setItem('jwt_token', 'demo-token');
+        localStorage.setItem('current_user', JSON.stringify({
+          id: '1', name: 'Alvaro Garula', email: email, role: 'Desarrollador'
+        }));
+        window.location.href = 'conversations.html';
       } finally {
         document.getElementById('btn-text').classList.remove('d-none');
         document.getElementById('btn-spinner').classList.add('d-none');
