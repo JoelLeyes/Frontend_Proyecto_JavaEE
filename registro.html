@@ -193,6 +193,7 @@
         <div class="req-item" id="req-upper"><i class="bi bi-circle"></i>Al menos una mayúscula</div>
         <div class="req-item" id="req-num"><i class="bi bi-circle"></i>Al menos un número</div>
         <div class="req-item" id="req-spec"><i class="bi bi-circle"></i>Al menos un carácter especial (!@#$)</div>
+        <div class="req-item" id="req-mix"><i class="bi bi-circle"></i>No solo letras o números</div>
       </div>
     </div>
 
@@ -320,6 +321,14 @@ function validateStep(n) {
       showAlert('alert-step2', 'La contraseña debe tener al menos 8 caracteres');
       return false;
     }
+    if (/^[a-zA-Z]+$/.test(pwd)) {
+      showAlert('alert-step2', 'La contraseña no puede contener solo letras. Debe incluir números o caracteres especiales');
+      return false;
+    }
+    if (/^[0-9]+$/.test(pwd)) {
+      showAlert('alert-step2', 'La contraseña no puede contener solo números. Debe incluir letras o caracteres especiales');
+      return false;
+    }
     if (pwd !== pwd2) {
       showAlert('alert-step2', 'Las contraseñas no coinciden');
       return false;
@@ -378,6 +387,7 @@ function checkStrength() {
     { id:'req-upper', ok: /[A-Z]/.test(v) },
     { id:'req-num',   ok: /[0-9]/.test(v) },
     { id:'req-spec',  ok: /[^A-Za-z0-9]/.test(v) },
+    { id:'req-mix',   ok: !(/^[a-zA-Z]+$/.test(v) || /^[0-9]+$/.test(v)) },
   ];
   let score = reqs.filter(r => r.ok).length;
   reqs.forEach(r => {
@@ -385,10 +395,10 @@ function checkStrength() {
     el.className = 'req-item' + (r.ok ? ' ok' : '');
     el.querySelector('i').className = r.ok ? 'bi bi-check-circle-fill' : 'bi bi-circle';
   });
-  const pct    = score * 25;
-  const colors = ['#e9ecef','#dc3545','#fd7e14','#20c997','#198754'];
-  const labels = ['Ingresá una contraseña','Muy débil','Débil','Buena','Excelente'];
-  const lclrs  = ['#aaa','#dc3545','#fd7e14','#20c997','#198754'];
+  const pct    = score * 20;
+  const colors = ['#e9ecef','#dc3545','#fd7e14','#20c997','#198754','#198754'];
+  const labels = ['Ingresá una contraseña','Muy débil','Débil','Buena','Excelente','Excelente'];
+  const lclrs  = ['#aaa','#dc3545','#fd7e14','#20c997','#198754','#198754'];
   fill.style.width      = pct + '%';
   fill.style.background = colors[score];
   label.textContent     = labels[score];
