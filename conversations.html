@@ -113,20 +113,23 @@
   <script>
     // Datos demo para desarrollar sin backend
     const DEMO_CONVS = [
-      { id:'1', name:'Desarrollo de Software', type:'GROUP',   lastMessage:'Maria: subieron el build nuevo', lastMessageAt:'2024-01-15T10:42:00', unreadCount:3 },
-      { id:'2', name:'Equipo UX',              type:'GROUP',   lastMessage:'Revisen el Figma actualizado',   lastMessageAt:'2024-01-15T09:15:00', unreadCount:0 },
-      { id:'3', name:'Gerencia General',       type:'GROUP',   lastMessage:'Reunión mañana a las 9am',       lastMessageAt:'2024-01-14T17:30:00', unreadCount:1 },
-      { id:'4', name:'Carlos Ramirez',         type:'PRIVATE', lastMessage:'OK, lo reviso ahora mismo',      lastMessageAt:'2024-01-14T16:00:00', unreadCount:0, online:true },
-      { id:'5', name:'Lucia Martinez',         type:'PRIVATE', lastMessage:'Adjunto el informe mensual',     lastMessageAt:'2024-01-13T11:20:00', unreadCount:1 },
-      { id:'6', name:'Juan Perez',             type:'PRIVATE', lastMessage:'Gracias por la info',            lastMessageAt:'2024-01-12T09:00:00', unreadCount:0 },
+      { idChat:'1', nombreChat:'Desarrollo de Software', tipoChat:'GROUP',   ultimoMensaje:'Maria: subieron el build nuevo', horaUltimoMensaje:'2024-01-15T10:42:00', mensajesSinLeer:3 },
+      { idChat:'2', nombreChat:'Equipo UX',              tipoChat:'GROUP',   ultimoMensaje:'Revisen el Figma actualizado',   horaUltimoMensaje:'2024-01-15T09:15:00', mensajesSinLeer:0 },
+      { idChat:'3', nombreChat:'Gerencia General',       tipoChat:'GROUP',   ultimoMensaje:'Reunión mañana a las 9am',       horaUltimoMensaje:'2024-01-14T17:30:00', mensajesSinLeer:1 },
+      { idChat:'4', nombreChat:'Carlos Ramirez',         tipoChat:'PRIVATE', ultimoMensaje:'OK, lo reviso ahora mismo',      horaUltimoMensaje:'2024-01-14T16:00:00', mensajesSinLeer:0, online:true },
+      { idChat:'5', nombreChat:'Lucia Martinez',         tipoChat:'PRIVATE', ultimoMensaje:'Adjunto el informe mensual',     horaUltimoMensaje:'2024-01-13T11:20:00', mensajesSinLeer:1 },
+      { idChat:'6', nombreChat:'Juan Perez',             tipoChat:'PRIVATE', ultimoMensaje:'Gracias por la info',            horaUltimoMensaje:'2024-01-12T09:00:00', mensajesSinLeer:0 },
     ];
 
     let allConvs    = [];
     let currentTab  = 'all';
 
     // Cargar usuario
-    const user = JSON.parse(localStorage.getItem('current_user') || '{"name":"Usuario","id":"1"}');
-    document.getElementById('nav-initials').textContent = initials(user.name);
+    const user = JSON.parse(localStorage.getItem('current_user') || '{"nombre":"Usuario","apellido":"","idUsuario":"1"}');
+    const userName = (user.nombre || user.apellido)
+      ? ((user.nombre || '') + ' ' + (user.apellido || '')).trim()
+      : (user.name || 'Usuario');
+    document.getElementById('nav-initials').textContent = initials(userName);
 
     async function loadConversations() {
       try {
@@ -147,10 +150,10 @@
       const search = document.getElementById('search-input').value.toLowerCase();
       let filtered = allConvs.filter(c => {
         const matchTab  = currentTab === 'all' ||
-                          (currentTab === 'group'   && c.type === 'GROUP') ||
-                          (currentTab === 'private' && c.type === 'PRIVATE');
-        const matchSearch = c.name.toLowerCase().includes(search) ||
-                            (c.lastMessage || '').toLowerCase().includes(search);
+                          (currentTab === 'group'   && c.tipoChat === 'GROUP') ||
+                          (currentTab === 'private' && c.tipoChat === 'PRIVATE');
+        const matchSearch = c.nombreChat.toLowerCase().includes(search) ||
+                            (c.ultimoMensaje || '').toLowerCase().includes(search);
         return matchTab && matchSearch;
       });
 
@@ -167,24 +170,24 @@
     }
 
     function convCard(conv) {
-      const isGroup   = conv.type === 'GROUP';
+      const isGroup   = conv.tipoChat === 'GROUP';
       const avatarCls = isGroup ? 'group' : 'private';
-      const ini       = initials(conv.name);
-      const time      = formatTime(conv.lastMessageAt);
-      const badge     = conv.unreadCount > 0
-        ? `<span class="unread-badge">${conv.unreadCount}</span>` : '';
+      const ini       = initials(conv.nombreChat);
+      const time      = formatTime(conv.horaUltimoMensaje);
+      const badge     = conv.mensajesSinLeer > 0
+        ? `<span class="unread-badge">${conv.mensajesSinLeer}</span>` : '';
       const onlineDot = conv.online ? '<div class="online-dot"></div>' : '';
       const groupTag  = isGroup ? '<span class="group-tag ms-1">grupo</span>' : '';
 
       return `
-        <a href="${conv.type === 'GROUP' ? 'group_chat.html' : 'chat.html'}?id=${conv.id}&name=${encodeURIComponent(conv.name)}&type=${conv.type}"
+        <a href="${conv.tipoChat === 'GROUP' ? 'group_chat.html' : 'chat.html'}?id=${conv.idChat}&name=${encodeURIComponent(conv.nombreChat)}&type=${conv.tipoChat}"
            class="conv-card">
           <div class="avatar ${avatarCls}">${ini}${onlineDot}</div>
           <div class="flex-grow-1 overflow-hidden">
             <div class="d-flex align-items-center gap-1">
-              <span class="conv-name">${conv.name}</span>${groupTag}
+              <span class="conv-name">${conv.nombreChat}</span>${groupTag}
             </div>
-            <div class="conv-preview">${conv.lastMessage || 'Sin mensajes aún'}</div>
+            <div class="conv-preview">${conv.ultimoMensaje || 'Sin mensajes aún'}</div>
           </div>
           <div class="d-flex flex-column align-items-end gap-1">
             <span class="conv-time">${time}</span>

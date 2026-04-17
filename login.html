@@ -136,7 +136,7 @@
         // Backend no disponible aún — redirigir igual para desarrollo del frontend
         localStorage.setItem('jwt_token', 'demo-token');
         localStorage.setItem('current_user', JSON.stringify({
-          id: '1', name: 'Alvaro Garula', email: email, role: 'Desarrollador'
+          idUsuario: '1', nombre: 'Alvaro', apellido: 'Garula', email: email, cargo: 'Desarrollador'
         }));
         window.location.href = 'conversations.html';
       } finally {

@@ -111,21 +111,69 @@
     const isGroup  = convType === 'GROUP';
 
     // Info del usuario actual
-    const currentUser = JSON.parse(localStorage.getItem('current_user') || '{"id":"1","name":"Alvaro Garula"}');
+    const currentUser = JSON.parse(localStorage.getItem('current_user') || '{"idUsuario":"1","nombre":"Alvaro","apellido":"Garula"}');
+    const currentUserId = String(currentUser.idUsuario || currentUser.id || '1');
+    const currentUserName = (currentUser.nombre || currentUser.apellido)
+      ? ((currentUser.nombre || '') + ' ' + (currentUser.apellido || '')).trim()
+      : (currentUser.name || 'Usuario');
 
     // Actualizar navbar
     document.getElementById('nav-title').textContent = convName;
     document.getElementById('nav-sub').textContent   = isGroup ? '5 participantes' : 'en línea';
     document.getElementById('nav-avatar').textContent = initials(convName);
 
-    // Mensajes demo
+    // Mensajes demo (alineados al modelo nuevo)
     let messages = [
-      { id:'1', senderId:'2', senderName:'Maria Lopez',  content:'Suban el nuevo build al servidor de pruebas', type:'TEXT',  sentAt: new Date(Date.now()-3600000).toISOString(), read:true },
-      { id:'2', senderId:'3', senderName:'Carlos R.',    content:'Ya lo tengo listo, subo en 5 min',            type:'TEXT',  sentAt: new Date(Date.now()-3200000).toISOString(), read:true },
-      { id:'3', senderId:'1', senderName:'Alvaro Garula',content:'Perfecto, yo hago el deploy al EC2',          type:'TEXT',  sentAt: new Date(Date.now()-2800000).toISOString(), read:true },
-      { id:'4', senderId:'2', senderName:'Maria Lopez',  content:'Acá el informe del sprint', type:'FILE', sentAt: new Date(Date.now()-2400000).toISOString(), read:true,
-        attachment:{ filename:'informe_sprint.pdf', fileType:'PDF', urlS3:'#' } },
-      { id:'5', senderId:'1', senderName:'Alvaro Garula',content:'Gracias, lo reviso ahora', type:'TEXT', sentAt: new Date(Date.now()-2000000).toISOString(), read:false },
+      {
+        idMensaje:'1',
+        contenido:'Suban el nuevo build al servidor de pruebas',
+        fechaEnviado: new Date(Date.now()-3600000).toISOString(),
+        adjuntos: [],
+        estados: [
+          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-3600000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
+          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-3590000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+        ]
+      },
+      {
+        idMensaje:'2',
+        contenido:'Ya lo tengo listo, subo en 5 min',
+        fechaEnviado: new Date(Date.now()-3200000).toISOString(),
+        adjuntos: [],
+        estados: [
+          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-3200000).toISOString(), usuarioIdUsuario:'3', usuario:{ idUsuario:'3', nombre:'Carlos', apellido:'R.' } },
+          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-3190000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+        ]
+      },
+      {
+        idMensaje:'3',
+        contenido:'Perfecto, yo hago el deploy al EC2',
+        fechaEnviado: new Date(Date.now()-2800000).toISOString(),
+        adjuntos: [],
+        estados: [
+          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-2800000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-2790000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
+        ]
+      },
+      {
+        idMensaje:'4',
+        contenido:'Acá el informe del sprint',
+        fechaEnviado: new Date(Date.now()-2400000).toISOString(),
+        adjuntos: [{ idAdjunto:'1', tipoArchivo:'PDF', nombreArchivo:'informe_sprint.pdf', urlArchivo:'#' }],
+        estados: [
+          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-2400000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
+          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-2390000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+        ]
+      },
+      {
+        idMensaje:'5',
+        contenido:'Gracias, lo reviso ahora',
+        fechaEnviado: new Date(Date.now()-2000000).toISOString(),
+        adjuntos: [],
+        estados: [
+          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-2000000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-1990000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
+        ]
+      },
     ];
 
     let lastPollTime = new Date();
@@ -136,9 +184,17 @@
       let lastDate = null;
 
       messages.forEach(msg => {
-        const mine    = msg.senderId === currentUser.id;
-        const sentAt  = new Date(msg.sentAt);
+        const sentAt  = new Date(msg.fechaEnviado);
         const dateStr = sentAt.toDateString();
+
+        const estados = msg.estados || [];
+        const enviado = estados.find(e => e.estado === 'ENVIADO');
+        const senderId = enviado ? String(enviado.usuarioIdUsuario || (enviado.usuario && enviado.usuario.idUsuario) || '') : '';
+        const senderName = (enviado && enviado.usuario)
+          ? ((enviado.usuario.nombre || '') + ' ' + (enviado.usuario.apellido || '')).trim()
+          : (senderId ? ('Usuario ' + senderId) : '');
+
+        const mine = senderId && senderId === currentUserId;
 
         // Separador de fecha
         if (dateStr !== lastDate) {
@@ -147,25 +203,35 @@
         }
 
         // Nombre del emisor en grupos
-        const sender = isGroup && !mine
-          ? `<div class="msg-sender">${msg.senderName}</div>` : '';
+        const sender = isGroup && !mine && senderName
+          ? `<div class="msg-sender">${senderName}</div>` : '';
 
-        // Tilde de lectura
+        // Estado (entregado/leído) derivado de estados_mensaje
+        const otherStates = senderId
+          ? estados.filter(e => String(e.usuarioIdUsuario) !== senderId)
+          : [];
+        const delivered = mine && otherStates.length > 0 && otherStates.every(e => e.estado === 'ENTREGADO' || e.estado === 'LEÍDO');
+        const read = mine && otherStates.length > 0 && otherStates.every(e => e.estado === 'LEÍDO');
+
         const ticks = mine
-          ? `<i class="bi bi-check${msg.read ? '-all text-info' : ''}" style="font-size:11px"></i>` : '';
+          ? `<i class="bi bi-check${delivered ? '-all' : ''}${read ? ' text-info' : ''}" style="font-size:11px"></i>`
+          : '';
 
-        // Adjunto
+        // Adjunto (si existe)
         let attachHtml = '';
-        if (msg.attachment) {
-          const isImg = msg.attachment.fileType === 'IMAGE';
+        const atts = msg.adjuntos || [];
+        if (atts.length > 0) {
+          const a = atts[0];
+          const tipo = (a.tipoArchivo || '').toUpperCase();
+          const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
           attachHtml = `
             <div class="attachment-bubble ${mine ? '' : 'in'}">
               <div class="file-icon" style="background:${mine ? 'rgba(255,255,255,.2)' : '#E6F1FB'}">
                 <i class="bi bi-${isImg ? 'image' : 'file-earmark-pdf'}" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
               </div>
               <div>
-                <div style="font-size:12px;font-weight:500">${msg.attachment.filename}</div>
-                <div style="font-size:10px;opacity:.7">${msg.attachment.fileType}</div>
+                <div style="font-size:12px;font-weight:500">${a.nombreArchivo || 'archivo'}</div>
+                <div style="font-size:10px;opacity:.7">${a.tipoArchivo || ''}</div>
               </div>
             </div>`;
         }
@@ -174,7 +240,7 @@
           <div class="msg-wrap ${mine ? 'out' : 'in'}">
             ${sender}
             <div class="bubble ${mine ? 'out' : 'in'}">
-              ${msg.content}
+              ${msg.contenido}
               ${attachHtml}
               <div class="msg-time ${mine ? 'out' : 'in'}">
                 ${formatTime(sentAt)} ${ticks}
@@ -200,14 +266,24 @@
       input.value = '';
       autoResize(input);
 
+      const nowIso = new Date().toISOString();
       const newMsg = {
-        id:         Date.now().toString(),
-        senderId:   currentUser.id,
-        senderName: currentUser.name,
-        content:    text,
-        type:       'TEXT',
-        sentAt:     new Date().toISOString(),
-        read:       false,
+        idMensaje:    Date.now().toString(),
+        contenido:    text,
+        fechaEnviado: nowIso,
+        adjuntos:     [],
+        estados: [
+          {
+            estado: 'ENVIADO',
+            fechaEntregado: nowIso,
+            usuarioIdUsuario: currentUserId,
+            usuario: {
+              idUsuario: currentUserId,
+              nombre: currentUser.nombre,
+              apellido: currentUser.apellido,
+            }
+          }
+        ]
       };
 
       // Agregar localmente de inmediato
@@ -220,7 +296,7 @@
         await fetch(`/api/chats/${convId}/messages`, {
           method:  'POST',
           headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
-          body:    JSON.stringify({ content: text, type: 'TEXT' })
+          body:    JSON.stringify({ contenido: text })
         });
       } catch { /* backend no disponible aún, el mensaje ya se muestra localmente */ }
     }
@@ -250,7 +326,7 @@
           const newMsgs = await res.json();
           if (newMsgs.length > 0) {
             messages = [...messages, ...newMsgs];
-            lastPollTime = new Date();
+            lastPollTime = new Date(newMsgs[newMsgs.length - 1].fechaEnviado || Date.now());
             renderMessages();
           }
         }

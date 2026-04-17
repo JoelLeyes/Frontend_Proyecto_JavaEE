@@ -452,8 +452,14 @@ async function finishRegister() {
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando cuenta...';
   btn.disabled  = true;
 
+  const fullName = document.getElementById('f-name').value.trim();
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  const nombre = parts.shift() || '';
+  const apellido = parts.join(' ');
+
   const payload = {
-    name:     document.getElementById('f-name').value.trim(),
+    nombre,
+    apellido,
     email:    document.getElementById('f-email').value.trim(),
     password: document.getElementById('f-pwd').value,
   };
