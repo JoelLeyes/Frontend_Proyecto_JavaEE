@@ -316,8 +316,12 @@ function validateStep(n) {
   if (n === 2) {
     const pwd  = document.getElementById('f-pwd').value;
     const pwd2 = document.getElementById('f-pwd2').value;
-    if (pwd.length < 8) {
-      showAlert('alert-step2', 'La contraseña debe tener al menos 8 caracteres');
+    const hasLen   = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasNum   = /[0-9]/.test(pwd);
+    const hasSpec  = /[^A-Za-z0-9]/.test(pwd);
+    if (!hasLen || !hasUpper || !hasNum || !hasSpec) {
+      showAlert('alert-step2', 'La contraseña debe cumplir todos los requisitos: 8 caracteres, mayúscula, número y carácter especial');
       return false;
     }
     if (pwd !== pwd2) {
