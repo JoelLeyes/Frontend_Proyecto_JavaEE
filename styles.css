@@ -335,6 +335,18 @@ body {
 }
 .btn-admin-primary        { background: var(--primary); color: #fff; border: none; }
 .btn-admin-primary:hover  { background: var(--primary-dark); color: #fff; }
+.modal-box-wide           { max-width: 620px; }
+
+/* Tarjetas de mensajes en panel admin */
+.msg-admin-card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fafafa;
+}
+.msg-admin-card .msg-meta  { font-size: 11px; color: #aaa; }
+.msg-admin-card .msg-chat  { font-size: 11px; font-weight: 600; color: var(--primary); }
+.msg-admin-card .msg-body  { font-size: 13px; color: #333; margin-top: 4px; word-break: break-word; }
 
 /* Requisitos de contraseña */
 .req-item     { font-size: 12px; color: #aaa; transition: color .2s; }

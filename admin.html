@@ -139,6 +139,35 @@
   </div>
 </div>
 
+<!-- Modal mensajes de usuario -->
+<div class="modal-overlay" id="mensajes-modal">
+  <div class="modal-box modal-box-wide">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-semibold mb-0"><i class="bi bi-chat-text me-2"></i>Mensajes de <span id="mensajes-user-name"></span></h6>
+      <button class="btn btn-sm btn-light" onclick="closeMensajesModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded" style="background:#f8f9fa">
+      <label class="form-label mb-0 fw-medium" style="white-space:nowrap">Últimos</label>
+      <input type="number" class="form-control form-control-sm" id="mensajes-cantidad"
+             value="10" min="1" max="100" style="width:80px"/>
+      <label class="form-label mb-0 fw-medium" style="white-space:nowrap">mensajes</label>
+      <button class="btn btn-sm btn-admin-primary ms-auto" onclick="cargarMensajes()">
+        <span id="mensajes-spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>
+        <i class="bi bi-arrow-clockwise me-1"></i>Cargar
+      </button>
+    </div>
+
+    <div id="mensajes-loading" class="text-center py-4 text-muted d-none">
+      <div class="spinner-border spinner-border-sm me-2"></div>Cargando mensajes...
+    </div>
+    <div id="mensajes-empty" class="text-center py-4 text-muted d-none admin-subtitle">
+      <i class="bi bi-chat-slash fs-3 d-block mb-2"></i>Este usuario no tiene mensajes enviados
+    </div>
+    <div id="mensajes-list" class="d-flex flex-column gap-2" style="max-height:400px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- Modal editar usuario -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
@@ -252,9 +281,14 @@ function renderTable(lista) {
         </td>
         <td class="td-mid date-cell">${fecha}</td>
         <td class="td-actions">
-          <button class="btn btn-sm btn-light btn-edit" onclick="openEditModal(${u.idUsuario})">
-            <i class="bi bi-pencil me-1"></i>Editar
-          </button>
+          <div class="d-flex gap-1 justify-content-end">
+            <button class="btn btn-sm btn-light btn-edit" onclick="openEditModal(${u.idUsuario})">
+              <i class="bi bi-pencil me-1"></i>Editar
+            </button>
+            <button class="btn btn-sm btn-light btn-edit" onclick="openMensajesModal(${u.idUsuario})">
+              <i class="bi bi-chat-text me-1"></i>Mensajes
+            </button>
+          </div>
         </td>
       </tr>`;
   }).join('');
@@ -329,6 +363,75 @@ async function saveUser() {
   } catch {
     alertEl.textContent = 'No se pudo conectar con el servidor';
     alertEl.classList.remove('d-none');
+  } finally {
+    spinner.classList.add('d-none');
+  }
+}
+
+// ── Modal mensajes de usuario ──────────────────────────────
+let mensajesUserId = null;
+
+function openMensajesModal(id) {
+  const u = allUsuarios.find(u => u.idUsuario === id);
+  if (!u) return;
+  mensajesUserId = id;
+  document.getElementById('mensajes-user-name').textContent = u.nombre + ' ' + u.apellido;
+  document.getElementById('mensajes-cantidad').value = 10;
+  document.getElementById('mensajes-list').innerHTML = '';
+  document.getElementById('mensajes-empty').classList.add('d-none');
+  document.getElementById('mensajes-loading').classList.add('d-none');
+  document.getElementById('mensajes-modal').classList.add('open');
+  cargarMensajes();
+}
+
+function closeMensajesModal() {
+  document.getElementById('mensajes-modal').classList.remove('open');
+  mensajesUserId = null;
+}
+
+async function cargarMensajes() {
+  if (!mensajesUserId) return;
+  const cantidad = Math.min(Math.max(parseInt(document.getElementById('mensajes-cantidad').value) || 10, 1), 100);
+  const spinner  = document.getElementById('mensajes-spinner');
+  const loading  = document.getElementById('mensajes-loading');
+  const empty    = document.getElementById('mensajes-empty');
+  const list     = document.getElementById('mensajes-list');
+
+  spinner.classList.remove('d-none');
+  loading.classList.remove('d-none');
+  list.innerHTML = '';
+  empty.classList.add('d-none');
+
+  try {
+    const res = await fetch(`/api/admin/usuarios/${mensajesUserId}/mensajes?cantidad=${cantidad}`, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const mensajes = res.ok ? await res.json() : [];
+    loading.classList.add('d-none');
+
+    if (!mensajes.length) { empty.classList.remove('d-none'); return; }
+
+    const TIPO_LABEL = { PRIVADO: 'Privado', GRUPAL: 'Grupo' };
+    const TIPO_ICON  = { PRIVADO: 'person', GRUPAL: 'people-fill' };
+
+    list.innerHTML = mensajes.map(m => {
+      const fecha = m.fechaEnviado
+        ? new Date(m.fechaEnviado).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+        : '—';
+      const tipoLabel = TIPO_LABEL[m.tipoChat] || m.tipoChat || '';
+      const tipoIcon  = TIPO_ICON[m.tipoChat]  || 'chat';
+      return `
+        <div class="msg-admin-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="msg-chat"><i class="bi bi-${tipoIcon} me-1"></i>${m.nombreChat || 'Chat'} · ${tipoLabel}</span>
+            <span class="msg-meta">${fecha}</span>
+          </div>
+          <div class="msg-body">${m.contenido || ''}</div>
+        </div>`;
+    }).join('');
+  } catch {
+    loading.classList.add('d-none');
+    empty.classList.remove('d-none');
   } finally {
     spinner.classList.add('d-none');
   }
