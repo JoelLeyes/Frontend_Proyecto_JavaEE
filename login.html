@@ -126,7 +126,11 @@
           const data = await res.json();
           localStorage.setItem('jwt_token',    data.token);
           localStorage.setItem('current_user', JSON.stringify(data.user));
-          window.location.href = 'conversations.html';
+          if (data.user.rolSistema === 'ADMIN_SISTEMA') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'conversations.html';
+          }
         } else {
           const err = await res.json();
           errorMsg.textContent = err.message || 'Credenciales incorrectas';
