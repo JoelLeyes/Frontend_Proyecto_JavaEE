@@ -126,10 +126,13 @@
           const data = await res.json();
           localStorage.setItem('jwt_token',    data.token);
           localStorage.setItem('current_user', JSON.stringify(data.user));
-          if (data.user.rolSistema === 'ADMIN_SISTEMA') {
-            window.location.href = 'admin.html';
+          const role = String(
+            (data.user && (data.user.rolSistema ?? data.user.rol_sistema ?? data.user.role)) ?? ''
+          ).trim().toUpperCase();
+          if (role === 'ADMIN_SISTEMA' || role === 'ADMIN') {
+            window.location.replace('admin.html');
           } else {
-            window.location.href = 'conversations.html';
+            window.location.replace('conversations.html');
           }
         } else {
           const err = await res.json();
@@ -137,12 +140,8 @@
           errorBox.classList.remove('d-none');
         }
       } catch {
-        // Backend no disponible aún — redirigir igual para desarrollo del frontend
-        localStorage.setItem('jwt_token', 'demo-token');
-        localStorage.setItem('current_user', JSON.stringify({
-          idUsuario: '1', nombre: 'Alvaro', apellido: 'Garula', email: email, cargo: 'Desarrollador'
-        }));
-        window.location.href = 'conversations.html';
+        errorMsg.textContent = 'No se pudo conectar al servidor. Probá de nuevo.';
+        errorBox.classList.remove('d-none');
       } finally {
         document.getElementById('btn-text').classList.remove('d-none');
         document.getElementById('btn-spinner').classList.add('d-none');

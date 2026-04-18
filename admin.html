@@ -175,7 +175,9 @@
 const token = localStorage.getItem('jwt_token');
 const user  = JSON.parse(localStorage.getItem('current_user') || '{}');
 
-if (!token || user.rolSistema !== 'ADMIN_SISTEMA') {
+const role = String((user && (user.rolSistema ?? user.rol_sistema ?? user.role)) ?? '').trim().toUpperCase();
+
+if (!token || (role !== 'ADMIN_SISTEMA' && role !== 'ADMIN')) {
   window.location.href = 'login.html';
 }
 

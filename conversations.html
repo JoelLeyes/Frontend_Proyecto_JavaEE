@@ -125,7 +125,14 @@
     let currentTab  = 'all';
 
     // Cargar usuario
+    const token = localStorage.getItem('jwt_token');
     const user = JSON.parse(localStorage.getItem('current_user') || '{"nombre":"Usuario","apellido":"","idUsuario":"1"}');
+
+    const role = String((user && (user.rolSistema ?? user.rol_sistema ?? user.role)) ?? '').trim().toUpperCase();
+    if (token && (role === 'ADMIN_SISTEMA' || role === 'ADMIN')) {
+      window.location.replace('admin.html');
+    }
+
     const userName = (user.nombre || user.apellido)
       ? ((user.nombre || '') + ' ' + (user.apellido || '')).trim()
       : (user.name || 'Usuario');
@@ -133,7 +140,6 @@
 
     async function loadConversations() {
       try {
-        const token = localStorage.getItem('jwt_token');
         const res   = await fetch('/api/chats', {
           headers: { 'Authorization': 'Bearer ' + token }
         });
