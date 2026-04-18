@@ -103,80 +103,70 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Leer parámetros de la URL
     const params = new URLSearchParams(window.location.search);
     const convId   = params.get('id')   || '1';
     const convName = params.get('name') || 'Conversación';
-    const convType = params.get('type') || 'GROUP';
-    const isGroup  = convType === 'GROUP';
+    const convType = params.get('type') || 'PRIVADO';
+    const isGroup  = convType === 'GRUPAL' || convType === 'GROUP';
 
-    // Info del usuario actual
-    const currentUser = JSON.parse(localStorage.getItem('current_user') || '{"idUsuario":"1","nombre":"Alvaro","apellido":"Garula"}');
-    const currentUserId = String(currentUser.idUsuario || currentUser.id || '1');
-    const currentUserName = (currentUser.nombre || currentUser.apellido)
-      ? ((currentUser.nombre || '') + ' ' + (currentUser.apellido || '')).trim()
-      : (currentUser.name || 'Usuario');
+    const token = localStorage.getItem('jwt_token');
+    const currentUser = JSON.parse(localStorage.getItem('current_user') || '{}');
+    const currentUserId = String(currentUser.idUsuario || currentUser.id || '');
 
-    // Actualizar navbar
-    document.getElementById('nav-title').textContent = convName;
-    document.getElementById('nav-sub').textContent   = isGroup ? '5 participantes' : 'en línea';
+    document.getElementById('nav-title').textContent  = convName;
+    document.getElementById('nav-sub').textContent    = isGroup ? 'Grupo' : '';
     document.getElementById('nav-avatar').textContent = initials(convName);
 
-    // Mensajes demo (alineados al modelo nuevo)
-    let messages = [
+    const loadedIds = new Set();
+    let lastPollTime = new Date();
+
+    // Demo — se reemplaza con datos reales cuando el backend responde
+    const DEMO_MESSAGES = [
       {
-        idMensaje:'1',
-        contenido:'Suban el nuevo build al servidor de pruebas',
-        fechaEnviado: new Date(Date.now()-3600000).toISOString(),
-        adjuntos: [],
-        estados: [
-          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-3600000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
-          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-3590000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+        idMensaje:'demo-1', contenido:'Suban el nuevo build al servidor de pruebas',
+        fechaEnviado: new Date(Date.now()-3600000).toISOString(), adjuntos:[],
+        estados:[
+          { estado:'ENVIADO',   usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
+          { estado:'ENTREGADO', usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
         ]
       },
       {
-        idMensaje:'2',
-        contenido:'Ya lo tengo listo, subo en 5 min',
-        fechaEnviado: new Date(Date.now()-3200000).toISOString(),
-        adjuntos: [],
-        estados: [
-          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-3200000).toISOString(), usuarioIdUsuario:'3', usuario:{ idUsuario:'3', nombre:'Carlos', apellido:'R.' } },
-          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-3190000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+        idMensaje:'demo-2', contenido:'Ya lo tengo listo, subo en 5 min',
+        fechaEnviado: new Date(Date.now()-3200000).toISOString(), adjuntos:[],
+        estados:[
+          { estado:'ENVIADO',   usuarioIdUsuario:'3', usuario:{ idUsuario:'3', nombre:'Carlos', apellido:'R.' } },
+          { estado:'ENTREGADO', usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
         ]
       },
       {
-        idMensaje:'3',
-        contenido:'Perfecto, yo hago el deploy al EC2',
-        fechaEnviado: new Date(Date.now()-2800000).toISOString(),
-        adjuntos: [],
-        estados: [
-          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-2800000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
-          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-2790000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
+        idMensaje:'demo-3', contenido:'Perfecto, yo hago el deploy al EC2',
+        fechaEnviado: new Date(Date.now()-2800000).toISOString(), adjuntos:[],
+        estados:[
+          { estado:'ENVIADO',   usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
+          { estado:'ENTREGADO', usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
         ]
       },
       {
-        idMensaje:'4',
-        contenido:'Acá el informe del sprint',
+        idMensaje:'demo-4', contenido:'Acá el informe del sprint',
         fechaEnviado: new Date(Date.now()-2400000).toISOString(),
-        adjuntos: [{ idAdjunto:'1', tipoArchivo:'PDF', nombreArchivo:'informe_sprint.pdf', urlArchivo:'#' }],
-        estados: [
-          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-2400000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
-          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-2390000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
+        adjuntos:[{ idAdjunto:'1', tipoArchivo:'PDF', nombreArchivo:'informe_sprint.pdf', urlArchivo:'#' }],
+        estados:[
+          { estado:'ENVIADO',   usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
+          { estado:'ENTREGADO', usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
         ]
       },
       {
-        idMensaje:'5',
-        contenido:'Gracias, lo reviso ahora',
-        fechaEnviado: new Date(Date.now()-2000000).toISOString(),
-        adjuntos: [],
-        estados: [
-          { estado:'ENVIADO',   fechaEntregado: new Date(Date.now()-2000000).toISOString(), usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:(currentUser.nombre||'Alvaro'), apellido:(currentUser.apellido||'Garula') } },
-          { estado:'ENTREGADO', fechaEntregado: new Date(Date.now()-1990000).toISOString(), usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria',  apellido:'Lopez' } },
+        idMensaje:'demo-5', contenido:'Gracias, lo reviso ahora',
+        fechaEnviado: new Date(Date.now()-2000000).toISOString(), adjuntos:[],
+        estados:[
+          { estado:'ENVIADO',   usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
+          { estado:'ENTREGADO', usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
         ]
       },
     ];
 
-    let lastPollTime = new Date();
+    let messages = [...DEMO_MESSAGES];
+    DEMO_MESSAGES.forEach(m => loadedIds.add(m.idMensaje));
 
     function renderMessages() {
       const area = document.getElementById('messages-area');
@@ -258,47 +248,68 @@
       area.scrollTop = area.scrollHeight;
     }
 
+    function addMessages(newMsgs) {
+      let added = false;
+      for (const msg of newMsgs) {
+        const id = String(msg.idMensaje);
+        if (!loadedIds.has(id)) {
+          loadedIds.add(id);
+          messages.push(msg);
+          added = true;
+        }
+      }
+      if (added) {
+        messages.sort((a, b) => new Date(a.fechaEnviado) - new Date(b.fechaEnviado));
+        renderMessages();
+      }
+    }
+
+    async function initChat() {
+      try {
+        const res = await fetch(`/api/chats/${convId}/messages`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          addMessages(await res.json());
+        }
+      } catch { /* sin backend */ }
+      lastPollTime = new Date();
+    }
+
+    async function pollMessages() {
+      try {
+        const res = await fetch(
+          `/api/chats/${convId}/messages?since=${lastPollTime.toISOString()}`,
+          { headers: { Authorization: 'Bearer ' + token } }
+        );
+        if (res.ok) {
+          const newMsgs = await res.json();
+          addMessages(newMsgs);
+          if (newMsgs.length > 0) lastPollTime = new Date();
+        }
+      } catch { /* sin backend */ }
+    }
+
     async function sendMessage() {
       const input = document.getElementById('msg-input');
       const text  = input.value.trim();
       if (!text) return;
 
-      input.value = '';
+      const btn = document.getElementById('send-btn');
+      btn.disabled = true;
+      input.value  = '';
       autoResize(input);
 
-      const nowIso = new Date().toISOString();
-      const newMsg = {
-        idMensaje:    Date.now().toString(),
-        contenido:    text,
-        fechaEnviado: nowIso,
-        adjuntos:     [],
-        estados: [
-          {
-            estado: 'ENVIADO',
-            fechaEntregado: nowIso,
-            usuarioIdUsuario: currentUserId,
-            usuario: {
-              idUsuario: currentUserId,
-              nombre: currentUser.nombre,
-              apellido: currentUser.apellido,
-            }
-          }
-        ]
-      };
-
-      // Agregar localmente de inmediato
-      messages.push(newMsg);
-      renderMessages();
-
-      // Enviar al backend
       try {
-        const token = localStorage.getItem('jwt_token');
-        await fetch(`/api/chats/${convId}/messages`, {
+        const res = await fetch(`/api/chats/${convId}/messages`, {
           method:  'POST',
-          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
           body:    JSON.stringify({ contenido: text })
         });
-      } catch { /* backend no disponible aún, el mensaje ya se muestra localmente */ }
+        if (res.ok) await pollMessages();
+      } catch { /* sin backend */ } finally {
+        btn.disabled = false;
+      }
     }
 
     function handleKey(e) {
@@ -311,26 +322,6 @@
     function autoResize(el) {
       el.style.height = 'auto';
       el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-    }
-
-    // Polling: busca mensajes nuevos cada 3 segundos
-    async function pollMessages() {
-      try {
-        const token = localStorage.getItem('jwt_token');
-        const since = lastPollTime.toISOString();
-        const res   = await fetch(
-          `/api/chats/${convId}/messages?since=${since}`,
-          { headers: { 'Authorization': 'Bearer ' + token } }
-        );
-        if (res.ok) {
-          const newMsgs = await res.json();
-          if (newMsgs.length > 0) {
-            messages = [...messages, ...newMsgs];
-            lastPollTime = new Date(newMsgs[newMsgs.length - 1].fechaEnviado || Date.now());
-            renderMessages();
-          }
-        }
-      } catch { /* sin backend, ok */ }
     }
 
     function initials(name) {
@@ -352,8 +343,7 @@
       return dt.toLocaleDateString('es', { day:'2-digit', month:'long' });
     }
 
-    // Arrancar
-    renderMessages();
+    initChat();
     setInterval(pollMessages, 3000);
   </script>
 
