@@ -106,7 +106,8 @@
     const params = new URLSearchParams(window.location.search);
     const convId   = params.get('id')   || '1';
     const convName = params.get('name') || 'Conversación';
-    const convType = params.get('type') || 'PRIVADO';
+    const convTypeRaw = params.get('type') || 'PRIVADO';
+    const convType = String(convTypeRaw).trim().toUpperCase();
     const isGroup  = convType === 'GRUPAL' || convType === 'GROUP';
 
     const token = localStorage.getItem('jwt_token');
@@ -165,8 +166,15 @@
       },
     ];
 
-    let messages = [...DEMO_MESSAGES];
-    DEMO_MESSAGES.forEach(m => loadedIds.add(m.idMensaje));
+    let messages = [];
+
+    function setMessages(newMsgs) {
+      loadedIds.clear();
+      messages = Array.isArray(newMsgs) ? [...newMsgs] : [];
+      for (const m of messages) loadedIds.add(String(m.idMensaje));
+      messages.sort((a, b) => new Date(a.fechaEnviado) - new Date(b.fechaEnviado));
+      renderMessages();
+    }
 
     function renderMessages() {
       const area = document.getElementById('messages-area');
@@ -265,14 +273,19 @@
     }
 
     async function initChat() {
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
       try {
         const res = await fetch(`/api/chats/${convId}/messages`, {
           headers: { Authorization: 'Bearer ' + token }
         });
-        if (res.ok) {
-          addMessages(await res.json());
-        }
-      } catch { /* sin backend */ }
+        if (res.ok) setMessages(await res.json());
+        else setMessages(DEMO_MESSAGES);
+      } catch {
+        setMessages(DEMO_MESSAGES);
+      }
       lastPollTime = new Date();
     }
 
@@ -291,6 +304,10 @@
     }
 
     async function sendMessage() {
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
       const input = document.getElementById('msg-input');
       const text  = input.value.trim();
       if (!text) return;

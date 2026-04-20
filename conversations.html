@@ -162,6 +162,13 @@
     let allConvs    = [];
     let currentTab  = 'all';
 
+    function normalizeTipoChat(tipo) {
+      const t = String(tipo || '').trim().toUpperCase();
+      if (t === 'GRUPAL') return 'GROUP';
+      if (t === 'PRIVADO') return 'PRIVATE';
+      return t;
+    }
+
     // Cargar usuario
     const token = localStorage.getItem('jwt_token');
     const user = JSON.parse(localStorage.getItem('current_user') || '{"nombre":"Usuario","apellido":"","idUsuario":"1"}');
@@ -193,9 +200,10 @@
     function renderConvs() {
       const search = document.getElementById('search-input').value.toLowerCase();
       let filtered = allConvs.filter(c => {
+        const tipo = normalizeTipoChat(c.tipoChat);
         const matchTab  = currentTab === 'all' ||
-                          (currentTab === 'group'   && c.tipoChat === 'GROUP') ||
-                          (currentTab === 'private' && c.tipoChat === 'PRIVATE');
+						  (currentTab === 'group'   && tipo === 'GROUP') ||
+						  (currentTab === 'private' && tipo === 'PRIVATE');
         const matchSearch = c.nombreChat.toLowerCase().includes(search) ||
                             (c.ultimoMensaje || '').toLowerCase().includes(search);
         return matchTab && matchSearch;
@@ -214,7 +222,8 @@
     }
 
     function convCard(conv) {
-      const isGroup   = conv.tipoChat === 'GROUP';
+      const tipo      = normalizeTipoChat(conv.tipoChat);
+      const isGroup   = tipo === 'GROUP';
       const avatarCls = isGroup ? 'group' : 'private';
       const ini       = initials(conv.nombreChat);
       const time      = formatTime(conv.horaUltimoMensaje);
@@ -224,7 +233,7 @@
       const groupTag  = isGroup ? '<span class="group-tag ms-1">grupo</span>' : '';
 
       return `
-        <a href="${conv.tipoChat === 'GROUP' ? 'group_chat.html' : 'chat.html'}?id=${conv.idChat}&name=${encodeURIComponent(conv.nombreChat)}&type=${conv.tipoChat}"
+        <a href="chat.html?id=${conv.idChat}&name=${encodeURIComponent(conv.nombreChat)}&type=${tipo}"
            class="conv-card">
           <div class="avatar ${avatarCls}">${ini}${onlineDot}</div>
           <div class="flex-grow-1 overflow-hidden">
@@ -355,7 +364,8 @@
         if (res.ok) {
           const chat = await res.json();
           closeNuevoChat();
-          window.location.href = `chat.html?id=${chat.idChat}&name=${encodeURIComponent(chat.nombreChat)}&type=${chat.tipoChat}`;
+          const tipo = normalizeTipoChat(chat.tipoChat);
+          window.location.href = `chat.html?id=${chat.idChat}&name=${encodeURIComponent(chat.nombreChat)}&type=${tipo}`;
         } else {
           alert('No se pudo crear la conversación');
         }
