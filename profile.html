@@ -112,7 +112,7 @@
     <!-- Cuenta -->
     <div class="section-card">
       <div class="section-label">Cuenta</div>
-      <div class="profile-row">
+      <div class="profile-row" onclick="openPasswordModal()">
         <div class="row-icon" style="background:#FFF8E1;color:#F59E0B"><i class="bi bi-lock"></i></div>
         <div class="flex-grow-1">
           <div class="row-label">Cambiar contraseña</div>
@@ -144,6 +144,43 @@
     </div>
 
     <p class="text-center text-muted mt-3" style="font-size:11px">NexoLab v1.0.0</p>
+  </div>
+
+  <!-- Modal cambiar contraseña -->
+  <div class="modal-overlay" id="password-modal">
+    <div class="modal-box" style="max-width:400px">
+      <h6 class="fw-semibold mb-3">Cambiar contraseña</h6>
+
+      <div class="mb-3">
+        <label class="form-label">Contraseña actual</label>
+        <input type="password" class="form-control" id="pwd-actual" placeholder="Tu contraseña actual"/>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Nueva contraseña</label>
+        <input type="password" class="form-control" id="pwd-nueva" placeholder="Nueva contraseña" oninput="checkReqs()"/>
+      </div>
+
+      <!-- Requisitos -->
+      <div class="mb-3 ps-1">
+        <div class="req-item" id="req-len"><i class="bi bi-x-circle-fill"></i> Mínimo 8 caracteres</div>
+        <div class="req-item" id="req-upper"><i class="bi bi-x-circle-fill"></i> Al menos una mayúscula</div>
+        <div class="req-item" id="req-num"><i class="bi bi-x-circle-fill"></i> Al menos un número</div>
+        <div class="req-item" id="req-spec"><i class="bi bi-x-circle-fill"></i> Al menos un carácter especial</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Confirmar nueva contraseña</label>
+        <input type="password" class="form-control" id="pwd-confirmar" placeholder="Repetí la nueva contraseña"/>
+      </div>
+
+      <div id="pwd-error" class="alert alert-danger py-2 d-none" style="font-size:13px"></div>
+      <div id="pwd-success" class="alert alert-success py-2 d-none" style="font-size:13px"></div>
+
+      <div class="d-flex gap-2 mt-1">
+        <button class="btn btn-light flex-grow-1" onclick="closePasswordModal()">Cancelar</button>
+        <button class="btn btn-admin-primary flex-grow-1" id="pwd-btn" onclick="cambiarPassword()">Guardar</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal selección de estado -->
@@ -277,6 +314,93 @@
           renderEstado(user.tipoEstado);
         }
       } catch { /* sin backend */ }
+    }
+
+    // ── Cambiar contraseña ────────────────────────────────────
+    function openPasswordModal() {
+      document.getElementById('pwd-actual').value    = '';
+      document.getElementById('pwd-nueva').value     = '';
+      document.getElementById('pwd-confirmar').value = '';
+      document.getElementById('pwd-error').classList.add('d-none');
+      document.getElementById('pwd-success').classList.add('d-none');
+      ['req-len','req-upper','req-num','req-spec'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('ok');
+        el.querySelector('i').className = 'bi bi-x-circle-fill';
+      });
+      document.getElementById('password-modal').classList.add('open');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('password-modal').classList.remove('open');
+    }
+
+    function checkReqs() {
+      const pwd = document.getElementById('pwd-nueva').value;
+      setReq('req-len',   pwd.length >= 8);
+      setReq('req-upper', /[A-Z]/.test(pwd));
+      setReq('req-num',   /[0-9]/.test(pwd));
+      setReq('req-spec',  /[^A-Za-z0-9]/.test(pwd));
+    }
+
+    function setReq(id, ok) {
+      const el = document.getElementById(id);
+      el.classList.toggle('ok', ok);
+      el.querySelector('i').className = ok ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill';
+    }
+
+    async function cambiarPassword() {
+      const actual     = document.getElementById('pwd-actual').value;
+      const nueva      = document.getElementById('pwd-nueva').value;
+      const confirmar  = document.getElementById('pwd-confirmar').value;
+      const errorEl    = document.getElementById('pwd-error');
+      const successEl  = document.getElementById('pwd-success');
+
+      errorEl.classList.add('d-none');
+      successEl.classList.add('d-none');
+
+      if (!actual || !nueva || !confirmar) {
+        errorEl.textContent = 'Completá todos los campos.';
+        errorEl.classList.remove('d-none');
+        return;
+      }
+      if (nueva !== confirmar) {
+        errorEl.textContent = 'Las contraseñas nuevas no coinciden.';
+        errorEl.classList.remove('d-none');
+        return;
+      }
+      if (nueva.length < 8 || !/[A-Z]/.test(nueva) || !/[0-9]/.test(nueva) || !/[^A-Za-z0-9]/.test(nueva)) {
+        errorEl.textContent = 'La nueva contraseña no cumple los requisitos.';
+        errorEl.classList.remove('d-none');
+        return;
+      }
+
+      const btn = document.getElementById('pwd-btn');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        const res = await fetch('/api/usuarios/me/password', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ passwordActual: actual, passwordNueva: nueva })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          successEl.textContent = '¡Contraseña actualizada correctamente!';
+          successEl.classList.remove('d-none');
+          setTimeout(closePasswordModal, 1800);
+        } else {
+          errorEl.textContent = data.message || 'Error al actualizar la contraseña.';
+          errorEl.classList.remove('d-none');
+        }
+      } catch {
+        errorEl.textContent = 'No se pudo conectar con el servidor.';
+        errorEl.classList.remove('d-none');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar';
+      }
     }
 
     const logoutModal = new bootstrap.Modal(document.getElementById('logout-modal'));
