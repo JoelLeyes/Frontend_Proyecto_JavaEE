@@ -83,15 +83,15 @@
       <div class="profile-row">
         <div class="row-icon" style="background:#EEEDFE;color:#3C3489"><i class="bi bi-building"></i></div>
         <div>
-          <div class="row-label">Tecnología</div>
-          <div class="row-value">Departamento</div>
+          <div class="row-label" id="profile-sector">—</div>
+          <div class="row-value">Sector</div>
         </div>
       </div>
       <div class="profile-row">
         <div class="row-icon" style="background:#E1F5EE;color:#085041"><i class="bi bi-person-badge"></i></div>
         <div>
-          <div class="row-label" id="profile-role-row">Desarrollador</div>
-          <div class="row-value">Rol en la empresa</div>
+          <div class="row-label" id="profile-role-row">—</div>
+          <div class="row-value">Cargo</div>
         </div>
       </div>
     </div>
@@ -208,11 +208,14 @@
         : (user.name || 'Usuario');
       const role = user.cargo || user.role || 'Usuario';
 
+      const sector = user.sector || user.departamento || 'Sin asignar';
+
       document.getElementById('profile-avatar').textContent   = initials(userName);
       document.getElementById('profile-name').textContent     = userName;
       document.getElementById('profile-email').textContent    = user.email || 'sin correo';
       document.getElementById('profile-role').textContent     = role;
       document.getElementById('profile-role-row').textContent = role;
+      document.getElementById('profile-sector').textContent   = sector;
 
       renderEstado(user.tipoEstado || 'DESCONECTADO');
     }
@@ -228,6 +231,8 @@
           user = { ...user, ...data };
           localStorage.setItem('current_user', JSON.stringify(user));
           renderEstado(user.tipoEstado || 'DESCONECTADO');
+          document.getElementById('profile-role-row').textContent = user.cargo || '—';
+          document.getElementById('profile-sector').textContent   = user.sector || 'Sin asignar';
         }
       } catch { /* sin backend */ }
     }
