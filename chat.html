@@ -173,50 +173,6 @@
     const loadedIds = new Set();
     let lastPollTime = new Date();
 
-    // Demo — se reemplaza con datos reales cuando el backend responde
-    const DEMO_MESSAGES = [
-      {
-        idMensaje:'demo-1', contenido:'Suban el nuevo build al servidor de pruebas',
-        fechaEnviado: new Date(Date.now()-3600000).toISOString(), adjuntos:[],
-        estados:[
-          { estado:'ENVIADO',   usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
-          { estado:'ENTREGADO', usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
-        ]
-      },
-      {
-        idMensaje:'demo-2', contenido:'Ya lo tengo listo, subo en 5 min',
-        fechaEnviado: new Date(Date.now()-3200000).toISOString(), adjuntos:[],
-        estados:[
-          { estado:'ENVIADO',   usuarioIdUsuario:'3', usuario:{ idUsuario:'3', nombre:'Carlos', apellido:'R.' } },
-          { estado:'ENTREGADO', usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
-        ]
-      },
-      {
-        idMensaje:'demo-3', contenido:'Perfecto, yo hago el deploy al EC2',
-        fechaEnviado: new Date(Date.now()-2800000).toISOString(), adjuntos:[],
-        estados:[
-          { estado:'ENVIADO',   usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
-          { estado:'ENTREGADO', usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
-        ]
-      },
-      {
-        idMensaje:'demo-4', contenido:'Acá el informe del sprint',
-        fechaEnviado: new Date(Date.now()-2400000).toISOString(),
-        adjuntos:[{ idAdjunto:'1', tipoArchivo:'PDF', nombreArchivo:'informe_sprint.pdf', urlArchivo:'#' }],
-        estados:[
-          { estado:'ENVIADO',   usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
-          { estado:'ENTREGADO', usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
-        ]
-      },
-      {
-        idMensaje:'demo-5', contenido:'Gracias, lo reviso ahora',
-        fechaEnviado: new Date(Date.now()-2000000).toISOString(), adjuntos:[],
-        estados:[
-          { estado:'ENVIADO',   usuarioIdUsuario:currentUserId, usuario:{ idUsuario:currentUserId, nombre:currentUser.nombre, apellido:currentUser.apellido } },
-          { estado:'ENTREGADO', usuarioIdUsuario:'2', usuario:{ idUsuario:'2', nombre:'Maria', apellido:'Lopez' } },
-        ]
-      },
-    ];
 
     let messages = [];
 
@@ -340,11 +296,11 @@
         if (res.ok) {
           setMessages(await res.json());
         } else {
-          setMessages(DEMO_MESSAGES);
+          setMessages([]);
           showDemoBanner();
         }
       } catch {
-        setMessages(DEMO_MESSAGES);
+        setMessages([]);
         showDemoBanner();
       }
       lastPollTime = new Date();
