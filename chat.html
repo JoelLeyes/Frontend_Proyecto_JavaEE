@@ -14,16 +14,27 @@
 <body>
 
   <!-- Navbar -->
-  <div class="chat-navbar">
+  <div class="chat-navbar" style="position:relative">
     <a href="conversations.html" class="back-btn"><i class="bi bi-arrow-left"></i></a>
     <div class="chat-avatar" id="nav-avatar">DS</div>
-    <div>
+    <div style="flex:1;min-width:0">
       <div class="chat-title" id="nav-title">Desarrollo de Software</div>
-      <div class="chat-sub"  id="nav-sub">5 participantes</div>
+      <div class="chat-sub"  id="nav-sub"></div>
     </div>
-    <div class="ms-auto d-flex gap-2" style="color:var(--primary-light)">
-      <button class="btn btn-link p-0" style="color:var(--primary-light)" onclick="toggleSearch()"><i class="bi bi-search"></i></button>
-      <button class="btn btn-link p-0" style="color:var(--primary-light)"><i class="bi bi-three-dots-vertical"></i></button>
+    <button class="btn btn-link p-0" style="color:var(--primary-light)" onclick="toggleSearch()"><i class="bi bi-search"></i></button>
+    <button class="chat-menu-btn" id="chat-menu-btn" onclick="toggleChatMenu(event)"><i class="bi bi-three-dots-vertical"></i></button>
+
+    <!-- Dropdown menu (group only) -->
+    <div class="chat-dropdown" id="chat-dropdown">
+      <div class="chat-dropdown-item" onclick="openParticipants()">
+        <i class="bi bi-people"></i> Ver participantes
+      </div>
+      <div class="chat-dropdown-item" id="add-member-item" onclick="openAddMember()">
+        <i class="bi bi-person-plus"></i> Agregar miembro
+      </div>
+      <div class="chat-dropdown-item danger" onclick="confirmLeaveGroup()">
+        <i class="bi bi-door-open"></i> Abandonar grupo
+      </div>
     </div>
   </div>
 
@@ -96,6 +107,46 @@
     </button>
   </div>
 
+  <!-- Panel de participantes -->
+  <div class="participants-panel" id="participants-panel" onclick="closeParticipants(event)">
+    <div class="participants-sheet">
+      <div class="participants-sheet-header">
+        <span class="fw-semibold" id="participants-title">Participantes</span>
+        <button class="btn btn-sm btn-light" onclick="closeParticipants()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="participants-sheet-body" id="participants-body">
+        <div class="text-center py-4 text-muted" id="participants-loading">
+          <div class="spinner-border spinner-border-sm"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal agregar miembro -->
+  <div class="modal-overlay" id="modal-add-member">
+    <div class="modal-box">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-person-plus me-2"></i>Agregar miembro</h6>
+        <button class="btn btn-sm btn-light" onclick="closeAddMember()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="search-wrap mb-2">
+        <i class="bi bi-search"></i>
+        <input class="search-input" style="width:100%" id="am-search"
+               placeholder="Buscar por nombre..." oninput="buscarParaAgregar()"/>
+      </div>
+      <div id="am-loading" class="text-center py-2 text-muted d-none" style="font-size:13px">
+        <div class="spinner-border spinner-border-sm me-1"></div>Buscando...
+      </div>
+      <div id="am-results" class="d-flex flex-column gap-1" style="max-height:260px;overflow-y:auto"></div>
+      <div id="am-empty" class="text-center py-2 text-muted d-none" style="font-size:13px">
+        <i class="bi bi-person-x d-block mb-1 fs-4"></i>No se encontraron usuarios
+      </div>
+      <div id="am-hint" class="text-center py-2 text-muted" style="font-size:13px">
+        Escribí al menos 2 caracteres para buscar
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -110,8 +161,14 @@
     const currentUserId = String(currentUser.idUsuario || currentUser.id || '');
 
     document.getElementById('nav-title').textContent  = convName;
-    document.getElementById('nav-sub').textContent    = isGroup ? 'Grupo' : '';
     document.getElementById('nav-avatar').textContent = initials(convName);
+
+    // Solo mostrar menú "..." en grupos
+    document.getElementById('chat-menu-btn').style.display = isGroup ? '' : 'none';
+    if (isGroup) {
+      document.getElementById('nav-sub').textContent = 'Grupo';
+      loadParticipantCount();
+    }
 
     const loadedIds = new Set();
     let lastPollTime = new Date();
@@ -477,6 +534,180 @@
     function highlightText(text, term) {
       const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="search-hit">$1</mark>');
+    }
+
+    // ── Group management ─────────────────────────────────────
+    let isAdminOfGroup = false;
+    let amTimer = null;
+
+    async function loadParticipantCount() {
+      try {
+        const res = await fetch(`/api/chats/${convId}/participantes`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          const list = await res.json();
+          document.getElementById('nav-sub').textContent = `${list.length} participantes`;
+          const me = list.find(p => String(p.idUsuario) === currentUserId);
+          isAdminOfGroup = me && me.rol === 'ADMINISTRADOR';
+          document.getElementById('add-member-item').style.display = isAdminOfGroup ? '' : 'none';
+        }
+      } catch { /* sin backend */ }
+    }
+
+    function toggleChatMenu(e) {
+      e.stopPropagation();
+      document.getElementById('chat-dropdown').classList.toggle('open');
+    }
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#chat-dropdown') && !e.target.closest('#chat-menu-btn')) {
+        document.getElementById('chat-dropdown').classList.remove('open');
+      }
+    });
+
+    async function openParticipants() {
+      document.getElementById('chat-dropdown').classList.remove('open');
+      document.getElementById('participants-panel').classList.add('open');
+      document.getElementById('participants-body').innerHTML =
+        '<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></div>';
+
+      try {
+        const res = await fetch(`/api/chats/${convId}/participantes`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          const list = await res.json();
+          document.getElementById('participants-title').textContent = `Participantes (${list.length})`;
+          document.getElementById('participants-body').innerHTML = list.map(p => {
+            const nombre = `${p.nombre} ${p.apellido}`.trim();
+            const ini = initials(nombre);
+            const badge = p.rol === 'ADMINISTRADOR'
+              ? '<span class="participant-role-badge">Admin</span>' : '';
+            return `
+              <div class="participant-row">
+                <div class="avatar-sm">${ini}</div>
+                <div style="font-size:14px;font-weight:500">${nombre}</div>
+                ${badge}
+              </div>`;
+          }).join('');
+        }
+      } catch {
+        document.getElementById('participants-body').innerHTML =
+          '<div class="text-center py-3 text-muted">No se pudo cargar</div>';
+      }
+    }
+
+    function closeParticipants(e) {
+      if (e && e.target !== document.getElementById('participants-panel')) return;
+      document.getElementById('participants-panel').classList.remove('open');
+    }
+
+    function openAddMember() {
+      document.getElementById('chat-dropdown').classList.remove('open');
+      document.getElementById('am-search').value = '';
+      document.getElementById('am-results').innerHTML = '';
+      document.getElementById('am-empty').classList.add('d-none');
+      document.getElementById('am-loading').classList.add('d-none');
+      document.getElementById('am-hint').classList.remove('d-none');
+      document.getElementById('modal-add-member').classList.add('open');
+      setTimeout(() => document.getElementById('am-search').focus(), 100);
+    }
+
+    function closeAddMember() {
+      document.getElementById('modal-add-member').classList.remove('open');
+    }
+
+    function buscarParaAgregar() {
+      const q = document.getElementById('am-search').value.trim();
+      clearTimeout(amTimer);
+      if (q.length < 2) {
+        document.getElementById('am-results').innerHTML = '';
+        document.getElementById('am-empty').classList.add('d-none');
+        document.getElementById('am-loading').classList.add('d-none');
+        document.getElementById('am-hint').classList.remove('d-none');
+        return;
+      }
+      document.getElementById('am-hint').classList.add('d-none');
+      document.getElementById('am-loading').classList.remove('d-none');
+      amTimer = setTimeout(() => fetchParaAgregar(q), 350);
+    }
+
+    async function fetchParaAgregar(q) {
+      try {
+        const res = await fetch('/api/usuarios?q=' + encodeURIComponent(q), {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const lista = res.ok ? await res.json() : [];
+        document.getElementById('am-loading').classList.add('d-none');
+        renderParaAgregar(lista);
+      } catch {
+        document.getElementById('am-loading').classList.add('d-none');
+        renderParaAgregar([]);
+      }
+    }
+
+    function renderParaAgregar(lista) {
+      const results = document.getElementById('am-results');
+      const empty   = document.getElementById('am-empty');
+      const available = lista.filter(u => String(u.idUsuario) !== currentUserId);
+      if (available.length === 0) {
+        results.innerHTML = '';
+        empty.classList.remove('d-none');
+        return;
+      }
+      empty.classList.add('d-none');
+      results.innerHTML = available.map(u => {
+        const ini    = ((u.nombre || ' ')[0] + (u.apellido || ' ')[0]).toUpperCase();
+        const nombre = `${u.nombre} ${u.apellido}`.trim();
+        return `
+          <div class="user-result-card" onclick="agregarMiembro(${u.idUsuario}, '${nombre.replace(/'/g, "\\'")}')">
+            <div class="avatar-sm">${ini}</div>
+            <div>
+              <div class="fw-medium" style="font-size:14px">${nombre}</div>
+              <div class="text-muted" style="font-size:12px">${u.email || ''}</div>
+            </div>
+            <i class="bi bi-plus-circle ms-auto text-primary"></i>
+          </div>`;
+      }).join('');
+    }
+
+    async function agregarMiembro(usuarioId, nombre) {
+      try {
+        const res = await fetch(`/api/chats/${convId}/participantes`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body:    JSON.stringify({ usuarioId })
+        });
+        if (res.ok) {
+          closeAddMember();
+          loadParticipantCount();
+          alert(`${nombre} fue agregado al grupo.`);
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert(err.message || 'No se pudo agregar el miembro');
+        }
+      } catch {
+        alert('No se pudo conectar con el servidor');
+      }
+    }
+
+    async function confirmLeaveGroup() {
+      document.getElementById('chat-dropdown').classList.remove('open');
+      if (!confirm('¿Abandonar el grupo? No podrás volver a ver los mensajes.')) return;
+      try {
+        const res = await fetch(`/api/chats/${convId}/participantes`, {
+          method:  'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          window.location.href = 'conversations.html';
+        } else {
+          alert('No se pudo abandonar el grupo');
+        }
+      } catch {
+        alert('No se pudo conectar con el servidor');
+      }
     }
 
     initChat();

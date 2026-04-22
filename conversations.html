@@ -123,12 +123,24 @@
     </div>
   </div>
 
-  <!-- Botón nuevo chat -->
-  <button class="fab" title="Nueva conversación" onclick="openNuevoChat()">
-    <i class="bi bi-plus"></i>
-  </button>
+  <!-- FAB speed-dial -->
+  <div class="fab-container">
+    <div class="fab-menu" id="fab-menu">
+      <div class="fab-option" onclick="openNuevoGrupo()">
+        <span class="fab-option-label">Nuevo grupo</span>
+        <button class="fab-option-btn"><i class="bi bi-people-fill"></i></button>
+      </div>
+      <div class="fab-option" onclick="openNuevoChat()">
+        <span class="fab-option-label">Chat privado</span>
+        <button class="fab-option-btn"><i class="bi bi-person-fill"></i></button>
+      </div>
+    </div>
+    <button class="fab" id="fab-main" onclick="toggleFabMenu()">
+      <i class="bi bi-plus" id="fab-icon"></i>
+    </button>
+  </div>
 
-  <!-- Modal nuevo chat -->
+  <!-- Modal nuevo chat privado -->
   <div class="modal-overlay" id="modal-nuevo-chat">
     <div class="modal-box">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -149,6 +161,53 @@
       </div>
       <div id="nc-hint" class="text-center py-3 text-muted" style="font-size:13px">
         Escribí al menos 2 caracteres para buscar
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal nuevo grupo -->
+  <div class="modal-overlay" id="modal-nuevo-grupo">
+    <div class="modal-box">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-people me-2"></i>Nuevo grupo</h6>
+        <button class="btn btn-sm btn-light" onclick="closeNuevoGrupo()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div class="step-indicator">
+        <div class="step-dot active" id="sdot-1"></div>
+        <div class="step-dot" id="sdot-2"></div>
+      </div>
+
+      <!-- Paso 1: nombre del grupo -->
+      <div id="ng-step1">
+        <label class="form-label">Nombre del grupo</label>
+        <input type="text" class="form-control mb-3" id="ng-nombre" placeholder="Ej: Equipo Desarrollo"
+               maxlength="60" oninput="validateNgStep1()"/>
+        <button class="btn btn-primary-custom" id="ng-next-btn" onclick="ngNextStep()" disabled>
+          Siguiente <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </div>
+
+      <!-- Paso 2: agregar miembros -->
+      <div id="ng-step2" class="d-none">
+        <div class="chips-container" id="ng-chips">
+          <span class="text-muted" style="font-size:12px;padding:4px 2px" id="ng-chips-hint">Ningún miembro agregado aún</span>
+        </div>
+        <div class="search-wrap mb-2">
+          <i class="bi bi-search"></i>
+          <input class="search-input" style="width:100%" id="ng-search"
+                 placeholder="Buscar miembros..." oninput="buscarMiembros()"/>
+        </div>
+        <div id="ng-loading" class="text-center py-2 text-muted d-none" style="font-size:13px">
+          <div class="spinner-border spinner-border-sm me-1"></div>Buscando...
+        </div>
+        <div id="ng-results" class="d-flex flex-column gap-1" style="max-height:220px;overflow-y:auto;margin-bottom:12px"></div>
+        <div id="ng-empty" class="text-center py-2 text-muted d-none" style="font-size:13px">
+          <i class="bi bi-person-x d-block mb-1 fs-4"></i>No se encontraron usuarios
+        </div>
+        <button class="btn btn-primary-custom" onclick="crearGrupo()">
+          <i class="bi bi-check-lg me-1"></i>Crear grupo
+        </button>
       </div>
     </div>
   </div>
@@ -298,20 +357,6 @@
     // ── Nuevo chat ─────────────────────────────────────────
     let ncTimer = null;
 
-    function openNuevoChat() {
-      document.getElementById('nc-search').value = '';
-      document.getElementById('nc-results').innerHTML = '';
-      document.getElementById('nc-empty').classList.add('d-none');
-      document.getElementById('nc-loading').classList.add('d-none');
-      document.getElementById('nc-hint').classList.remove('d-none');
-      document.getElementById('modal-nuevo-chat').classList.add('open');
-      setTimeout(() => document.getElementById('nc-search').focus(), 100);
-    }
-
-    function closeNuevoChat() {
-      document.getElementById('modal-nuevo-chat').classList.remove('open');
-    }
-
     function buscarUsuarios() {
       const q = document.getElementById('nc-search').value.trim();
       clearTimeout(ncTimer);
@@ -383,6 +428,185 @@
       } catch {
         alert('No se pudo conectar con el servidor');
       }
+    }
+
+    // ── FAB speed-dial ─────────────────────────────────────
+    let fabOpen = false;
+    function toggleFabMenu() {
+      fabOpen = !fabOpen;
+      document.getElementById('fab-menu').classList.toggle('open', fabOpen);
+      document.getElementById('fab-icon').classList.toggle('fab-rotate', fabOpen);
+    }
+
+    document.addEventListener('click', e => {
+      if (fabOpen && !e.target.closest('.fab-container')) {
+        fabOpen = false;
+        document.getElementById('fab-menu').classList.remove('open');
+        document.getElementById('fab-icon').classList.remove('fab-rotate');
+      }
+    });
+
+    // ── Nuevo grupo ────────────────────────────────────────
+    let ngMiembros = [];  // [{idUsuario, nombre}]
+    let ngTimer = null;
+
+    function openNuevoGrupo() {
+      if (fabOpen) toggleFabMenu();
+      ngMiembros = [];
+      document.getElementById('ng-nombre').value = '';
+      document.getElementById('ng-next-btn').disabled = true;
+      document.getElementById('ng-search').value = '';
+      document.getElementById('ng-results').innerHTML = '';
+      document.getElementById('ng-empty').classList.add('d-none');
+      document.getElementById('ng-loading').classList.add('d-none');
+      renderChips();
+      showNgStep(1);
+      document.getElementById('modal-nuevo-grupo').classList.add('open');
+      setTimeout(() => document.getElementById('ng-nombre').focus(), 100);
+    }
+
+    function closeNuevoGrupo() {
+      document.getElementById('modal-nuevo-grupo').classList.remove('open');
+    }
+
+    function showNgStep(n) {
+      document.getElementById('ng-step1').classList.toggle('d-none', n !== 1);
+      document.getElementById('ng-step2').classList.toggle('d-none', n !== 2);
+      document.getElementById('sdot-1').classList.toggle('active', n === 1);
+      document.getElementById('sdot-2').classList.toggle('active', n === 2);
+    }
+
+    function validateNgStep1() {
+      const v = document.getElementById('ng-nombre').value.trim();
+      document.getElementById('ng-next-btn').disabled = v.length < 2;
+    }
+
+    function ngNextStep() {
+      showNgStep(2);
+      setTimeout(() => document.getElementById('ng-search').focus(), 100);
+    }
+
+    function renderChips() {
+      const container = document.getElementById('ng-chips');
+      const hint = document.getElementById('ng-chips-hint');
+      if (ngMiembros.length === 0) {
+        container.innerHTML = '';
+        container.appendChild(hint);
+        hint.style.display = '';
+        return;
+      }
+      hint.style.display = 'none';
+      container.innerHTML = ngMiembros.map(m => `
+        <span class="member-chip">
+          ${m.nombre}
+          <button onclick="removeMiembro(${m.idUsuario})">&times;</button>
+        </span>`).join('') + hint.outerHTML;
+      container.querySelector('#ng-chips-hint').style.display = 'none';
+    }
+
+    function addMiembro(id, nombre) {
+      if (!ngMiembros.find(m => m.idUsuario === id)) {
+        ngMiembros.push({ idUsuario: id, nombre });
+        renderChips();
+      }
+      document.getElementById('ng-search').value = '';
+      document.getElementById('ng-results').innerHTML = '';
+    }
+
+    function removeMiembro(id) {
+      ngMiembros = ngMiembros.filter(m => m.idUsuario !== id);
+      renderChips();
+    }
+
+    function buscarMiembros() {
+      const q = document.getElementById('ng-search').value.trim();
+      clearTimeout(ngTimer);
+      if (q.length < 2) {
+        document.getElementById('ng-results').innerHTML = '';
+        document.getElementById('ng-empty').classList.add('d-none');
+        document.getElementById('ng-loading').classList.add('d-none');
+        return;
+      }
+      document.getElementById('ng-loading').classList.remove('d-none');
+      ngTimer = setTimeout(() => fetchMiembros(q), 350);
+    }
+
+    async function fetchMiembros(q) {
+      try {
+        const res = await fetch('/api/usuarios?q=' + encodeURIComponent(q), {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const lista = res.ok ? await res.json() : [];
+        document.getElementById('ng-loading').classList.add('d-none');
+        renderMiembrosResultados(lista);
+      } catch {
+        document.getElementById('ng-loading').classList.add('d-none');
+        renderMiembrosResultados([]);
+      }
+    }
+
+    function renderMiembrosResultados(lista) {
+      const results = document.getElementById('ng-results');
+      const empty   = document.getElementById('ng-empty');
+      // Excluir al usuario actual y ya agregados
+      const currentId = user.idUsuario;
+      const available = lista.filter(u => u.idUsuario != currentId && !ngMiembros.find(m => m.idUsuario == u.idUsuario));
+      if (available.length === 0) {
+        results.innerHTML = '';
+        empty.classList.remove('d-none');
+        return;
+      }
+      empty.classList.add('d-none');
+      results.innerHTML = available.map(u => {
+        const ini    = ((u.nombre || ' ')[0] + (u.apellido || ' ')[0]).toUpperCase();
+        const nombre = `${u.nombre} ${u.apellido}`.trim();
+        return `
+          <div class="user-result-card" onclick="addMiembro(${u.idUsuario}, '${nombre.replace(/'/g, "\\'")}')">
+            <div class="avatar-sm">${ini}</div>
+            <div>
+              <div class="fw-medium" style="font-size:14px">${nombre}</div>
+              <div class="text-muted" style="font-size:12px">${u.email || ''}</div>
+            </div>
+            <i class="bi bi-plus-circle ms-auto text-primary"></i>
+          </div>`;
+      }).join('');
+    }
+
+    async function crearGrupo() {
+      const nombre = document.getElementById('ng-nombre').value.trim();
+      if (!nombre) { showNgStep(1); return; }
+      const miembros = ngMiembros.map(m => m.idUsuario);
+      try {
+        const res = await fetch('/api/chats', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body:    JSON.stringify({ tipo: 'GRUPAL', nombre, miembros })
+        });
+        if (res.ok) {
+          const chat = await res.json();
+          closeNuevoGrupo();
+          window.location.href = `chat.html?id=${chat.idChat}&name=${encodeURIComponent(chat.nombreChat)}&type=GROUP`;
+        } else {
+          alert('No se pudo crear el grupo');
+        }
+      } catch {
+        alert('No se pudo conectar con el servidor');
+      }
+    }
+
+    function openNuevoChat() {
+      if (fabOpen) toggleFabMenu();
+      document.getElementById('nc-search').value = '';
+      document.getElementById('nc-results').innerHTML = '';
+      document.getElementById('nc-empty').classList.add('d-none');
+      document.getElementById('nc-loading').classList.add('d-none');
+      document.getElementById('nc-hint').classList.remove('d-none');
+      document.getElementById('modal-nuevo-chat').classList.add('open');
+      setTimeout(() => document.getElementById('nc-search').focus(), 100);
+    }
+
+    function closeNuevoChat() {
+      document.getElementById('modal-nuevo-chat').classList.remove('open');
     }
   </script>
 
