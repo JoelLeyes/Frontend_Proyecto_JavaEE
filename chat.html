@@ -38,15 +38,56 @@
     <button class="search-nav-btn" onclick="closeSearch()" title="Cerrar"><i class="bi bi-x-lg"></i></button>
   </div>
 
+  <!-- Banner modo demo -->
+  <div class="demo-banner d-none" id="demo-banner">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span><strong>Modo demo</strong> — el servidor no está disponible. Mostrando datos de ejemplo.</span>
+  </div>
+
   <!-- Mensajes -->
   <div class="messages-area" id="messages-area">
     <!-- Se genera con JS -->
   </div>
 
+  <!-- Emoji picker -->
+  <div class="emoji-picker" id="emoji-picker">
+    <button class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+    <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+    <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+    <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+    <button class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
+    <button class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+    <button class="emoji-btn" onclick="insertEmoji('😅')">😅</button>
+    <button class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
+    <button class="emoji-btn" onclick="insertEmoji('👀')">👀</button>
+    <button class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+    <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+    <button class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
+    <button class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
+    <button class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
+    <button class="emoji-btn" onclick="insertEmoji('⚡')">⚡</button>
+    <button class="emoji-btn" onclick="insertEmoji('📌')">📌</button>
+    <button class="emoji-btn" onclick="insertEmoji('📎')">📎</button>
+    <button class="emoji-btn" onclick="insertEmoji('🗓️')">🗓️</button>
+    <button class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+    <button class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
+    <button class="emoji-btn" onclick="insertEmoji('✍️')">✍️</button>
+    <button class="emoji-btn" onclick="insertEmoji('🤝')">🤝</button>
+    <button class="emoji-btn" onclick="insertEmoji('👋')">👋</button>
+    <button class="emoji-btn" onclick="insertEmoji('😬')">😬</button>
+    <button class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
+    <button class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
+    <button class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
+    <button class="emoji-btn" onclick="insertEmoji('😤')">😤</button>
+  </div>
+
   <!-- Barra de entrada -->
-  <div class="input-bar">
+  <div class="input-bar" style="position:relative">
     <button class="attach-btn" title="Adjuntar archivo">
       <i class="bi bi-paperclip"></i>
+    </button>
+    <button class="attach-btn" title="Emojis" onclick="toggleEmojiPicker(event)">
+      <i class="bi bi-emoji-smile"></i>
     </button>
     <textarea class="msg-input" id="msg-input" placeholder="Escribe un mensaje..."
               rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
@@ -239,10 +280,15 @@
         const res = await fetch(`/api/chats/${convId}/messages`, {
           headers: { Authorization: 'Bearer ' + token }
         });
-        if (res.ok) setMessages(await res.json());
-        else setMessages(DEMO_MESSAGES);
+        if (res.ok) {
+          setMessages(await res.json());
+        } else {
+          setMessages(DEMO_MESSAGES);
+          showDemoBanner();
+        }
       } catch {
         setMessages(DEMO_MESSAGES);
+        showDemoBanner();
       }
       lastPollTime = new Date();
     }
@@ -317,6 +363,32 @@
       if (diff === 1) return 'Ayer';
       return dt.toLocaleDateString('es', { day:'2-digit', month:'long' });
     }
+
+    // ── Banner demo ──────────────────────────────────────────
+    function showDemoBanner() {
+      document.getElementById('demo-banner').classList.remove('d-none');
+    }
+
+    // ── Emoji picker ─────────────────────────────────────────
+    function toggleEmojiPicker(e) {
+      e.stopPropagation();
+      document.getElementById('emoji-picker').classList.toggle('open');
+    }
+
+    function insertEmoji(emoji) {
+      const input = document.getElementById('msg-input');
+      const start = input.selectionStart;
+      const end   = input.selectionEnd;
+      input.value = input.value.slice(0, start) + emoji + input.value.slice(end);
+      const pos = start + emoji.length;
+      input.setSelectionRange(pos, pos);
+      input.focus();
+      autoResize(input);
+    }
+
+    document.addEventListener('click', () => {
+      document.getElementById('emoji-picker').classList.remove('open');
+    });
 
     // ── Búsqueda ─────────────────────────────────────────────
     let searchTerm     = '';

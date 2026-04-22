@@ -73,6 +73,12 @@
     </div>
   </nav>
 
+  <!-- Banner modo demo -->
+  <div class="demo-banner d-none" id="demo-banner">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span><strong>Modo demo</strong> — el servidor no está disponible. Mostrando datos de ejemplo.</span>
+  </div>
+
   <div class="main-layout">
 
     <!-- Buscador -->
@@ -188,10 +194,15 @@
         const res   = await fetch('/api/chats', {
           headers: { 'Authorization': 'Bearer ' + token }
         });
-        if (res.ok) allConvs = await res.json();
-        else        allConvs = DEMO_CONVS;
+        if (res.ok) {
+          allConvs = await res.json();
+        } else {
+          allConvs = DEMO_CONVS;
+          document.getElementById('demo-banner').classList.remove('d-none');
+        }
       } catch {
-        allConvs = DEMO_CONVS; // usar datos demo si no hay backend
+        allConvs = DEMO_CONVS;
+        document.getElementById('demo-banner').classList.remove('d-none');
       }
       document.getElementById('loading').classList.add('d-none');
       renderConvs();
