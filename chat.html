@@ -8,11 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
   <link href="styles.css" rel="stylesheet"/>
   <script src="theme.js"></script>
-  <style>
-    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  </style>
 </head>
-<body>
+<body class="chat-page">
 
   <!-- Navbar -->
   <div class="chat-navbar" style="position:relative">
@@ -20,7 +17,7 @@
     <div class="chat-avatar" id="nav-avatar">DS</div>
     <div style="flex:1;min-width:0">
       <div class="chat-title" id="nav-title">Desarrollo de Software</div>
-      <div class="chat-sub"  id="nav-sub"></div>
+      <div class="chat-sub d-flex align-items-center gap-1" id="nav-sub"></div>
     </div>
     <button class="btn btn-link p-0" style="color:var(--primary-light)" onclick="toggleSearch()"><i class="bi bi-search"></i></button>
     <button class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
@@ -179,6 +176,32 @@
     if (isGroup) {
       document.getElementById('nav-sub').textContent = 'Grupo';
       loadParticipantCount();
+    }
+
+    // ── Estado del otro usuario (chats privados) ──────────
+    const STATUS_LABELS = {
+      DISPONIBLE:   'Disponible',
+      OCUPADO:      'Ocupado',
+      EN_REUNION:   'En reunión',
+      DESCONECTADO: 'Desconectado',
+    };
+
+    async function loadUserStatus() {
+      if (isGroup) return;
+      try {
+        const res = await fetch(`/api/chats/${convId}/participantes`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const list = await res.json();
+        const otro = list.find(p => String(p.idUsuario) !== currentUserId);
+        if (!otro) return;
+        const estado = (otro.tipoEstado || 'DESCONECTADO').toUpperCase();
+        const label  = STATUS_LABELS[estado] || estado;
+        const cls    = estado.toLowerCase().replace('_', '_');
+        document.getElementById('nav-sub').innerHTML =
+          `<span class="nav-status-dot ${cls}"></span>${label}`;
+      } catch { /* sin backend, se deja vacío */ }
     }
 
     const loadedIds = new Set();
@@ -685,7 +708,9 @@
 
     initThemeToggle('theme-toggle');
     initChat();
+    loadUserStatus();
     setInterval(pollMessages, 3000);
+    if (!isGroup) setInterval(loadUserStatus, 10000);
   </script>
 
   <!-- Footer -->
