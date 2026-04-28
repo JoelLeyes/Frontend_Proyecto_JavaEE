@@ -423,7 +423,8 @@
           const tipo = normalizeTipoChat(chat.tipoChat);
           window.location.href = `chat.html?id=${chat.idChat}&name=${encodeURIComponent(chat.nombreChat)}&type=${tipo}`;
         } else {
-          alert('No se pudo crear la conversación');
+          const err = await res.json().catch(() => ({}));
+          alert(err.message || 'No se pudo crear la conversación');
         }
       } catch {
         alert('No se pudo conectar con el servidor');
@@ -587,7 +588,8 @@
           closeNuevoGrupo();
           window.location.href = `chat.html?id=${chat.idChat}&name=${encodeURIComponent(chat.nombreChat)}&type=GROUP`;
         } else {
-          alert('No se pudo crear el grupo');
+          const err = await res.json().catch(() => ({}));
+          alert(err.message || 'No se pudo crear el grupo');
         }
       } catch {
         alert('No se pudo conectar con el servidor');
