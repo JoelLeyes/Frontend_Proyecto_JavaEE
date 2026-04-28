@@ -3,43 +3,219 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ChatEmpresa — Login</title>
+  <title>NexoLab — Iniciar sesión</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
   <link href="styles.css" rel="stylesheet"/>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       min-height: 100vh;
       display: flex;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Panel izquierdo (branding) ── */
+    .login-left {
+      flex: 0 0 52%;
+      background: linear-gradient(145deg, #0C447C 0%, #185FA5 55%, #2176C7 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Círculos decorativos de fondo */
+    .login-left::before,
+    .login-left::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+    }
+    .login-left::before { width: 420px; height: 420px; top: -120px; right: -100px; }
+    .login-left::after  { width: 280px; height: 280px; bottom: -80px; left: -60px; }
+
+    .brand-logo {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,.15);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; color: #fff;
+      margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+
+    .brand-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+
+    .brand-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,.72);
+      margin-bottom: 48px;
+      line-height: 1.6;
+    }
+
+    .feature-list { list-style: none; padding: 0; margin: 0; }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 22px;
+      color: rgba(255,255,255,.88);
+      font-size: 0.95rem;
+    }
+
+    .feature-icon {
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      backdrop-filter: blur(4px);
+    }
+
+    .feature-text strong { display: block; font-weight: 600; color: #fff; }
+    .feature-text span   { font-size: 0.82rem; color: rgba(255,255,255,.65); }
+
+    .brand-badge {
+      margin-top: 48px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 6px 16px;
+      color: rgba(255,255,255,.8);
+      font-size: 12px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Panel derecho (formulario) ── */
+    .login-right {
+      flex: 1;
+      display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .login-card {
+      padding: 40px 32px;
       background: #fff;
-      border-radius: 16px;
-      padding: 40px 36px;
+    }
+
+    body.dark .login-right { background: #0F172A; }
+
+    .login-form-wrap {
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 4px 24px rgba(24,95,165,0.10);
+      max-width: 380px;
+    }
+
+    .login-form-wrap h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+    body.dark .login-form-wrap h2 { color: #E2E8F0; }
+
+    .login-form-wrap .sub {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 32px;
+    }
+    body.dark .login-form-wrap .sub { color: #94A3B8; }
+
+    .theme-toggle-right {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: none;
+      border: 1px solid #e0e0e0;
+      color: #666;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background .15s;
+    }
+    body.dark .theme-toggle-right { border-color: #334155; color: #94A3B8; }
+    .theme-toggle-right:hover { background: #f0f4f9; }
+    body.dark .theme-toggle-right:hover { background: #1E293B; }
+
+    /* Mobile: ocultar panel izquierdo */
+    @media (max-width: 768px) {
+      .login-left { display: none; }
+      .login-right { padding: 40px 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <!-- Logo -->
-    <div class="text-center mb-4">
-      <div class="logo-box"><span>NL</span></div>
-      <h4 class="fw-semibold mb-1">NexoLab</h4>
-      <p class="text-muted" style="font-size:13px">Comunicación interna empresarial</p>
-    </div>
+<script src="theme.js"></script>
 
-    <!-- Alerta de error -->
+<!-- Panel izquierdo -->
+<div class="login-left">
+  <div class="brand-logo">NL</div>
+
+  <h1 class="brand-title">Comunicación<br>empresarial<br>sin límites</h1>
+  <p class="brand-subtitle">La plataforma interna que conecta<br>a tu equipo en tiempo real.</p>
+
+  <ul class="feature-list">
+    <li>
+      <div class="feature-icon"><i class="bi bi-chat-dots-fill"></i></div>
+      <div class="feature-text">
+        <strong>Mensajes en tiempo real</strong>
+        <span>Chats privados y grupales para tu empresa</span>
+      </div>
+    </li>
+    <li>
+      <div class="feature-icon"><i class="bi bi-shield-lock-fill"></i></div>
+      <div class="feature-text">
+        <strong>Comunicación segura</strong>
+        <span>Autenticación con JWT y contraseñas cifradas</span>
+      </div>
+    </li>
+    <li>
+      <div class="feature-icon"><i class="bi bi-people-fill"></i></div>
+      <div class="feature-text">
+        <strong>Grupos y equipos</strong>
+        <span>Creá grupos, gestioná participantes y roles</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="brand-badge">
+    <i class="bi bi-building"></i>
+    Plataforma empresarial · NexoLab 2026
+  </div>
+</div>
+
+<!-- Panel derecho -->
+<div class="login-right" style="position:relative">
+
+  <!-- Toggle dark mode -->
+  <button class="theme-toggle-right" id="theme-toggle" title="Modo oscuro">
+    <i class="bi bi-moon-fill"></i>
+  </button>
+
+  <div class="login-form-wrap">
+    <h2>Bienvenido</h2>
+    <p class="sub">Ingresá con tu cuenta de empresa</p>
+
     <div id="error-box" class="alert alert-danger d-none" role="alert">
       <i class="bi bi-exclamation-circle me-2"></i>
       <span id="error-msg">Credenciales incorrectas</span>
     </div>
 
-    <!-- Formulario -->
     <form id="login-form" novalidate>
       <div class="mb-3">
         <label class="form-label">Correo electrónico</label>
@@ -50,7 +226,6 @@
           <input type="email" id="email" class="form-control border-start-0"
                  placeholder="usuario@empresa.com" required/>
         </div>
-        <div class="invalid-feedback">Ingresá un correo válido</div>
       </div>
 
       <div class="mb-4">
@@ -66,7 +241,6 @@
             <i class="bi bi-eye" id="eye-icon"></i>
           </button>
         </div>
-        <div class="invalid-feedback">Mínimo 6 caracteres</div>
       </div>
 
       <button type="submit" class="btn-primary-custom" id="login-btn">
@@ -80,74 +254,72 @@
     <div class="text-center mt-3">
       <a href="forgot_password.html" class="link-forgot">Olvidé mi contraseña</a>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function togglePass() {
-      const input = document.getElementById('password');
-      const icon  = document.getElementById('eye-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'bi bi-eye-slash';
-      } else {
-        input.type = 'password';
-        icon.className = 'bi bi-eye';
-      }
+    <div class="link-login mt-3">
+      ¿No tenés cuenta? <a href="registro.html">Registrate</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  initThemeToggle('theme-toggle');
+
+  function togglePass() {
+    const input = document.getElementById('password');
+    const icon  = document.getElementById('eye-icon');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorBox = document.getElementById('error-box');
+    const errorMsg = document.getElementById('error-msg');
+
+    errorBox.classList.add('d-none');
+    if (!email || !email.includes('@') || password.length < 6) {
+      this.classList.add('was-validated');
+      return;
     }
 
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email    = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const errorBox = document.getElementById('error-box');
-      const errorMsg = document.getElementById('error-msg');
+    document.getElementById('btn-text').classList.add('d-none');
+    document.getElementById('btn-spinner').classList.remove('d-none');
+    document.getElementById('login-btn').disabled = true;
 
-      errorBox.classList.add('d-none');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, password })
+      });
 
-      if (!email || !email.includes('@') || password.length < 6) {
-        this.classList.add('was-validated');
-        return;
-      }
-
-      // Mostrar spinner
-      document.getElementById('btn-text').classList.add('d-none');
-      document.getElementById('btn-spinner').classList.remove('d-none');
-      document.getElementById('login-btn').disabled = true;
-
-      try {
-        const res = await fetch('/api/auth/login', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ email, password })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem('jwt_token',    data.token);
-          localStorage.setItem('current_user', JSON.stringify(data.user));
-          const role = String(
-            (data.user && (data.user.rolSistema ?? data.user.rol_sistema ?? data.user.role)) ?? ''
-          ).trim().toUpperCase();
-          if (role === 'ADMIN_SISTEMA' || role === 'ADMIN') {
-            window.location.replace('admin.html');
-          } else {
-            window.location.replace('conversations.html');
-          }
-        } else {
-          const err = await res.json();
-          errorMsg.textContent = err.message || 'Credenciales incorrectas';
-          errorBox.classList.remove('d-none');
-        }
-      } catch {
-        errorMsg.textContent = 'No se pudo conectar al servidor. Probá de nuevo.';
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('jwt_token',    data.token);
+        localStorage.setItem('current_user', JSON.stringify(data.user));
+        const role = String(
+          (data.user && (data.user.rolSistema ?? data.user.rol_sistema ?? data.user.role)) ?? ''
+        ).trim().toUpperCase();
+        window.location.replace(
+          (role === 'ADMIN_SISTEMA' || role === 'ADMIN') ? 'admin.html' : 'conversations.html'
+        );
+      } else {
+        const err = await res.json();
+        errorMsg.textContent = err.message || 'Credenciales incorrectas';
         errorBox.classList.remove('d-none');
-      } finally {
-        document.getElementById('btn-text').classList.remove('d-none');
-        document.getElementById('btn-spinner').classList.add('d-none');
-        document.getElementById('login-btn').disabled = false;
       }
-    });
-  </script>
+    } catch {
+      errorMsg.textContent = 'No se pudo conectar al servidor. Probá de nuevo.';
+      errorBox.classList.remove('d-none');
+    } finally {
+      document.getElementById('btn-text').classList.remove('d-none');
+      document.getElementById('btn-spinner').classList.add('d-none');
+      document.getElementById('login-btn').disabled = false;
+    }
+  });
+</script>
 </body>
 </html>

@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
   <link href="styles.css" rel="stylesheet"/>
+  <script src="theme.js"></script>
   <style>
     .navbar-brand { color: #fff !important; font-weight: 600; font-size: 17px; }
     .user-initials {
@@ -64,6 +65,7 @@
     <span class="navbar-brand">NexoLab</span>
     <div class="ms-auto d-flex align-items-center gap-2">
       <div class="user-initials" id="nav-initials">AG</div>
+      <button class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
       <a href="profile.html" class="btn btn-sm btn-link p-0" style="color:#B5D4F4">
         <i class="bi bi-person-circle fs-5"></i>
       </a>
@@ -110,10 +112,13 @@
       <!-- Se genera con JS -->
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" style="--bs-primary: var(--primary)"></div>
-      <p class="text-muted mt-2" style="font-size:13px">Cargando conversaciones...</p>
+    <!-- Skeleton loading -->
+    <div id="loading" class="d-flex flex-column gap-2">
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:55%"></div><div class="skeleton skeleton-line" style="width:80%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:70%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:65%"></div><div class="skeleton skeleton-line" style="width:85%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:60%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:72%"></div><div class="skeleton skeleton-line" style="width:50%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
     </div>
 
     <!-- Vacío -->
@@ -351,6 +356,7 @@
       window.location.href = 'login.html';
     }
 
+    initThemeToggle('theme-toggle');
     loadConversations();
     setInterval(loadConversations, 5000);
 
