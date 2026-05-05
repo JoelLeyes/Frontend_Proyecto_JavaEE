@@ -114,6 +114,13 @@
     <!-- Cuenta -->
     <div class="section-card">
       <div class="section-label">Cuenta</div>
+      <div class="profile-row" onclick="openNombreModal()">
+        <div class="row-icon" style="background:#E6F1FB;color:#185FA5"><i class="bi bi-pencil"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Editar nombre</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+      </div>
       <div class="profile-row" onclick="openPasswordModal()">
         <div class="row-icon" style="background:#FFF8E1;color:#F59E0B"><i class="bi bi-lock"></i></div>
         <div class="flex-grow-1">
@@ -181,6 +188,26 @@
       <div class="d-flex gap-2 mt-1">
         <button class="btn btn-light flex-grow-1" onclick="closePasswordModal()">Cancelar</button>
         <button class="btn btn-admin-primary flex-grow-1" id="pwd-btn" onclick="cambiarPassword()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal editar nombre -->
+  <div class="modal-overlay" id="nombre-modal">
+    <div class="modal-box" style="max-width:400px">
+      <h6 class="fw-semibold mb-3">Editar nombre</h6>
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="input-nombre" placeholder="Tu nombre"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Apellido</label>
+        <input type="text" class="form-control" id="input-apellido" placeholder="Tu apellido"/>
+      </div>
+      <div id="nombre-error" class="alert alert-danger py-2 d-none" style="font-size:13px"></div>
+      <div class="d-flex gap-2 mt-1">
+        <button class="btn btn-light flex-grow-1" onclick="closeNombreModal()">Cancelar</button>
+        <button class="btn btn-admin-primary flex-grow-1" id="nombre-btn" onclick="guardarNombre()">Guardar</button>
       </div>
     </div>
   </div>
@@ -394,6 +421,59 @@
           setTimeout(closePasswordModal, 1800);
         } else {
           errorEl.textContent = data.message || 'Error al actualizar la contraseña.';
+          errorEl.classList.remove('d-none');
+        }
+      } catch {
+        errorEl.textContent = 'No se pudo conectar con el servidor.';
+        errorEl.classList.remove('d-none');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar';
+      }
+    }
+
+    // ── Editar nombre ─────────────────────────────────────────
+    function openNombreModal() {
+      document.getElementById('input-nombre').value   = user.nombre  || '';
+      document.getElementById('input-apellido').value = user.apellido || '';
+      document.getElementById('nombre-error').classList.add('d-none');
+      document.getElementById('nombre-modal').classList.add('open');
+    }
+
+    function closeNombreModal() {
+      document.getElementById('nombre-modal').classList.remove('open');
+    }
+
+    async function guardarNombre() {
+      const nombre   = document.getElementById('input-nombre').value.trim();
+      const apellido = document.getElementById('input-apellido').value.trim();
+      const errorEl  = document.getElementById('nombre-error');
+      errorEl.classList.add('d-none');
+
+      if (!nombre) {
+        errorEl.textContent = 'El nombre no puede estar vacío.';
+        errorEl.classList.remove('d-none');
+        return;
+      }
+
+      const btn = document.getElementById('nombre-btn');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        const res = await fetch('/api/usuarios/me', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ nombre, apellido })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          user = { ...user, nombre: data.nombre, apellido: data.apellido };
+          localStorage.setItem('current_user', JSON.stringify(user));
+          renderProfile();
+          closeNombreModal();
+        } else {
+          errorEl.textContent = data.message || 'Error al guardar el nombre.';
           errorEl.classList.remove('d-none');
         }
       } catch {
