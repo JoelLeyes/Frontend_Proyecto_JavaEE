@@ -535,6 +535,9 @@ mark.search-hit { background: #FFE566; color: #1a1a2e; border-radius: 2px; paddi
 /* ── Chat page layout ───────────────────────────────────── */
 body.chat-page { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
+/* ── Login page layout ──────────────────────────────────── */
+body.login-page { min-height: 100vh; display: flex; margin: 0; padding: 0; }
+
 /* ── Login split screen ─────────────────────────────────── */
 .login-left {
   flex: 0 0 52%;
