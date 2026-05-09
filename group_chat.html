@@ -504,36 +504,52 @@ function sendMessage() {
 
 function appendMessage(msg) {
   const msgs = document.getElementById('messages');
-
-  // Quitar typing si existe
   const typing = document.getElementById('typing-wrap');
-  msgs.removeChild(typing);
+  if (typing) msgs.removeChild(typing);
 
   const wrap = document.createElement('div');
-  wrap.className = 'mwrap ' + msg.type;
+  wrap.className = `mwrap ${msg.type}`;
 
-  if (msg.type === 'out') {
+  let attachHtml = '';
+  if (msg.attachments && Array.isArray(msg.attachments)) {
+    msg.attachments.forEach(a => {
+      const tipo = (a.tipoArchivo || '').toUpperCase();
+      const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
+      const isPdf = tipo.includes('PDF');
+      let preview = '';
+
+      if (isImg) {
+        preview = `<img src="${a.url}" alt="${a.nombre}" style="max-width:180px; max-height:120px; border-radius:8px; margin-top:6px;" />`;
+      }
+
+      attachHtml += `
+        <div class="attachment ${msg.type}">
+          <div class="att-icon" style="background:${msg.type === 'out' ? 'rgba(255,255,255,.2)' : '#F0F4F9'}; color:${msg.type === 'out' ? '#fff' : '#1a1a2e'}">
+            <i class="bi ${isPdf ? 'bi-file-earmark-pdf' : 'bi-file-earmark'}" style="font-size:16px"></i>
+          </div>
+          <div>
+            <div class="att-name">${a.nombre}</div>
+            <div class="att-size">${a.tamano}</div>
+          </div>
+          <i class="bi bi-download ms-auto" style="color:${msg.type === 'out' ? 'rgba(255,255,255,.65)' : '#888'}; font-size:14px"></i>
+          ${preview}
+        </div>`;
+    });
+  }
+
+  if (msg.type === 'in' || msg.type === 'out') {
     wrap.innerHTML = `
-      <div class="bubble out">
+      ${msg.type === 'in' ? `<div class="sender-name" style="color:${msg.senderColor}">${msg.senderName}</div>` : ''}
+      <div class="bubble ${msg.type}">
         ${escHtml(msg.content)}
-        <div class="msg-time out">
-          ${msg.time}
-          <i class="bi bi-check${msg.read ? '-all" style="color:#90cdf4' : '"'} style="font-size:12px"></i>
-        </div>
-      </div>`;
-  } else if (msg.type === 'in') {
-    wrap.innerHTML = `
-      <div class="sender-name" style="color:${msg.senderColor}">${msg.senderName}</div>
-      <div class="bubble in">
-        ${escHtml(msg.content)}
-        <div class="msg-time in">${msg.time}</div>
+        ${attachHtml}
+        <div class="msg-time ${msg.type}">${msg.time}</div>
       </div>`;
   } else if (msg.type === 'sys') {
     wrap.innerHTML = `<div class="bubble sys">${msg.content}</div>`;
   }
 
-  msgs.appendChild(typing);
-  msgs.insertBefore(wrap, typing);
+  msgs.appendChild(wrap);
   scrollBottom();
 }
 
@@ -564,7 +580,7 @@ function simulateAttach() {
 }
 
 function simulateReply() {
-  const sender = SENDERS[Math.floor(Math.random() * SENDERS.length)];
+        if (typing) msgs.appendChild(typing);
   const delay  = 1200 + Math.random() * 1000;
 
   document.getElementById('nav-status').textContent = sender.name + ' está escribiendo...';
