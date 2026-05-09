@@ -100,9 +100,12 @@
     <button class="emoji-btn" onclick="insertEmoji('😤')">😤</button>
   </div>
 
-  <!-- Barra de entrada -->
+  <!-- Input file oculto para seleccionar archivos -->
+  <input type="file" id="archivo-input" style="display:none;" />
+
+  <!-- Barra de entrada de mensajes -->
   <div class="input-bar" style="position:relative">
-    <button class="attach-btn" title="Adjuntar archivo">
+    <button class="attach-btn" title="Adjuntar archivo" onclick="abrirSelectorArchivo()">
       <i class="bi bi-paperclip"></i>
     </button>
     <button class="attach-btn" title="Emojis" onclick="toggleEmojiPicker(event)">
@@ -261,19 +264,20 @@
         let attachHtml = '';
         const atts = msg.adjuntos || [];
         if (atts.length > 0) {
-          const a = atts[0];
-          const tipo = (a.tipoArchivo || '').toUpperCase();
-          const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
-          attachHtml = `
-            <div class="attachment-bubble ${mine ? '' : 'in'}">
-              <div class="file-icon" style="background:${mine ? 'rgba(255,255,255,.2)' : '#E6F1FB'}">
-                <i class="bi bi-${isImg ? 'image' : 'file-earmark-pdf'}" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
-              </div>
-              <div>
-                <div style="font-size:12px;font-weight:500">${a.nombreArchivo || 'archivo'}</div>
-                <div style="font-size:10px;opacity:.7">${a.tipoArchivo || ''}</div>
-              </div>
-            </div>`;
+            atts.forEach(a => {
+                const tipo = (a.tipoArchivo || '').toUpperCase();
+                const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
+                attachHtml += `
+                <div class="attachment-bubble ${mine ? '' : 'in'}">
+                  <div class="file-icon" style="background:${mine ? 'rgba(255,255,255,.2)' : '#E6F1FB'}">
+                    <i class="bi bi-${isImg ? 'image' : 'file-earmark-pdf'}" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:12px;font-weight:500">${a.nombreArchivo || 'archivo'}</div>
+                    <div style="font-size:10px;opacity:.7">${a.tipoArchivo || ''}</div>
+                  </div>
+                </div>`;
+            });
         }
 
         const msgId      = String(msg.idMensaje);
@@ -366,8 +370,14 @@
         return;
       }
       const input = document.getElementById('msg-input');
-      const text  = input.value.trim();
-      if (!text) return;
+      const texto  = input.value.trim();
+      const archivoInput = document.getElementById('archivo-input');
+      const tieneArchivo = archivoInput.files && archivoInput.files[0];
+
+    // Validar que haya AL MENOS texto o archivo
+    if (!texto && !tieneArchivo) {
+        return;  // No hacer nada si no hay nada que enviar
+    }
 
       const btn = document.getElementById('send-btn');
       btn.disabled = true;
@@ -375,14 +385,23 @@
       autoResize(input);
 
       try {
-        const res = await fetch(`/api/chats/${convId}/messages`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body:    JSON.stringify({ contenido: text })
-        });
-        if (res.ok) await pollMessages();
-      } catch { /* sin backend */ } finally {
-        btn.disabled = false;
+          const formData = new FormData();
+          formData.append('contenido', texto);  // Puede estar vacío
+
+          // Añadir archivo si existe
+          if (tieneArchivo) {
+              formData.append('archivo', archivoInput.files[0]);
+              archivoInput.value = '';  // Limpiar selección
+          }
+
+          const res = await fetch(`/api/chats/${convId}/messages`, {
+              method: 'POST',
+              headers: { Authorization: 'Bearer ' + token },
+              body: formData
+          });
+          if (res.ok) await pollMessages();
+      } catch {} finally {
+          btn.disabled = false;
       }
     }
 
@@ -392,6 +411,22 @@
         sendMessage();
       }
     }
+
+    /**
+     * Abre el selector de archivos cuando se hace clic en el botón "Adjuntar"
+     */
+    function abrirSelectorArchivo() {
+      document.getElementById('archivo-input').click();
+    }
+
+    /**
+     * Mostrar en consola cuando se selecciona un archivo
+     */
+    document.getElementById('archivo-input').addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        console.log('Archivo seleccionado: ' + this.files[0].name);
+      }
+    });
 
     function autoResize(el) {
       el.style.height = 'auto';
