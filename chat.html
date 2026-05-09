@@ -442,26 +442,121 @@
      });
 
      function mostrarVistaPrevia() {
-        const archivoInput = document.getElementById('archivo-input');
-        const container = document.getElementById('files-preview-container');
-        container.innerHTML = '';
+       const archivoInput = document.getElementById('archivo-input');
+       const container = document.getElementById('files-preview-container');
 
-        if (archivoInput.files && archivoInput.files.length > 0) {
-          for (let i = 0; i < archivoInput.files.length; i++) {
-            const archivo = archivoInput.files[i];
-            const nombre = archivo.name;
-            const tipo = archivo.type;
-            const esImg = tipo.includes('image');
+       // Limpiar vista previa anterior
+       container.innerHTML = '';
 
-            const previewItem = document.createElement('div');
-            previewItem.className = 'file-preview-item';
-            previewItem.innerHTML = 
-              <i class="bi bi-${esImg ? 'image' : 'file-earmark'}"></i>
-              <span></span>
-            ;
-            container.appendChild(previewItem);
-          }
-        }
+       // Mostrar todos los archivos seleccionados
+       if (archivoInput.files && archivoInput.files.length > 0) {
+         for (let i = 0; i < archivoInput.files.length; i++) {
+           const archivo = archivoInput.files[i];
+           const nombre = archivo.name;
+           const tipo = archivo.type;
+           const esImg = tipo.includes('image');
+
+           const previewItem = document.createElement('div');
+           previewItem.className = 'file-preview-item';
+           previewItem.innerHTML = `
+             <i class="bi bi-${esImg ? 'image' : 'file-earmark'}"></i>
+             <span>${nombre}</span>
+             <button type="button" class="btn btn-sm btn-link" onclick="eliminarArchivo(${i})" style="padding:0">
+               <i class="bi bi-x-lg"></i>
+             </button>
+           `;
+           container.appendChild(previewItem);
+         }
+       }
+     }
+
+     /**
+      * Eliminar un archivo específico de la selección
+      */
+     function eliminarArchivo(indice) {
+       const archivoInput = document.getElementById('archivo-input');
+       const dataTransfer = new DataTransfer();
+
+       // Copiar todos los archivos excepto el que se va a eliminar
+       for (let i = 0; i < archivoInput.files.length; i++) {
+         if (i !== indice) {
+           dataTransfer.items.add(archivoInput.files[i]);
+         }
+       }
+
+       // Actualizar el input
+       archivoInput.files = dataTransfer.files;
+       mostrarVistaPrevia();
+     }
+
+     /**
+      * Limpiar selección de archivos y vista previa
+      */
+     function limpiarVistaPrevia() {
+       document.getElementById('archivo-input').value = '';
+       document.getElementById('files-preview-container').innerHTML = '';
+     }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    }
+
+    function initials(name) {
+      const parts = (name || '').trim().split(' ');
+      return parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : (name || 'U').substring(0, 2).toUpperCase();
+    }
+
+    function formatTime(dt) {
+      return dt.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function formatDate(dt) {
+      const now  = new Date();
+      const diff = Math.floor((now - dt) / 86400000);
+      if (diff === 0) return 'Hoy';
+      if (diff === 1) return 'Ayer';
+      return dt.toLocaleDateString('es', { day:'2-digit', month:'long' });
+    }
+
+    // ── Banner demo ──────────────────────────────────────────
+    function showDemoBanner() {
+      document.getElementById('demo-banner').classList.remove('d-none');
+    }
+
+    // ── Emoji picker ─────────────────────────────────────────
+    function toggleEmojiPicker(e) {
+      e.stopPropagation();
+      document.getElementById('emoji-picker').classList.toggle('open');
+    }
+
+    function insertEmoji(emoji) {
+      const input = document.getElementById('msg-input');
+      const start = input.selectionStart;
+      const end   = input.selectionEnd;
+      input.value = input.value.slice(0, start) + emoji + input.value.slice(end);
+      const pos = start + emoji.length;
+      input.setSelectionRange(pos, pos);
+      input.focus();
+      autoResize(input);
+    }
+
+    document.addEventListener('click', () => {
+      document.getElementById('emoji-picker').classList.remove('open');
+    });
+
+    // ── Búsqueda ─────────────────────────────────────────────
+    let searchTerm     = '';
+    let searchMatchIds = [];
+    let searchIndex    = -1;
+    let searchDebounce = null;
+
+    function toggleSearch() {
+      const bar = document.getElementById('chat-search-bar');
+      if (bar.classList.contains('open')) {
+        closeSearch();
       } else {
         bar.classList.add('open');
         document.getElementById('chat-search-input').focus();
@@ -734,5 +829,3 @@
   </footer>
 </body>
 </html>
-
-
