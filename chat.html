@@ -260,25 +260,31 @@
           ? `<i class="bi bi-check${delivered ? '-all' : ''}${read ? ' text-info' : ''}" style="font-size:11px"></i>`
           : '';
 
-        // Adjunto (si existe)
-        let attachHtml = '';
-        const atts = msg.adjuntos || [];
-        if (atts.length > 0) {
-            atts.forEach(a => {
-                const tipo = (a.tipoArchivo || '').toUpperCase();
-                const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
-                attachHtml += `
-                <div class="attachment-bubble ${mine ? '' : 'in'}">
+          // Adjunto (si existe)
+          let attachHtml = '';
+          const atts = msg.adjuntos || [];
+          if (atts.length > 0) {
+              atts.forEach(a => {
+                  const tipo = (a.tipoArchivo || '').toUpperCase();
+                  const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
+                  const rutaDescarga = a.rutaArchivo || '/uploads/' + a.nombreArchivo;
+
+                  attachHtml += `        <div class="attachment-bubble ${mine ? '' : 'in'}">
                   <div class="file-icon" style="background:${mine ? 'rgba(255,255,255,.2)' : '#E6F1FB'}">
                     <i class="bi bi-${isImg ? 'image' : 'file-earmark-pdf'}" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
                   </div>
-                  <div>
+                  <div style="flex:1">
                     <div style="font-size:12px;font-weight:500">${a.nombreArchivo || 'archivo'}</div>
                     <div style="font-size:10px;opacity:.7">${a.tipoArchivo || ''}</div>
                   </div>
+                  <a href="${rutaDescarga}" download="${a.nombreArchivo || 'descarga'}"
+                     class="btn btn-sm btn-link" style="padding:0;color:${mine ? '#fff' : 'var(--primary)'};text-decoration:none"
+                     title="Descargar">
+                    <i class="bi bi-download"></i>
+                  </a>
                 </div>`;
-            });
-        }
+              });
+          }
 
         const msgId      = String(msg.idMensaje);
         const isCurrent  = searchMatchIds.length > 0 && msgId === searchMatchIds[searchIndex];
@@ -419,14 +425,45 @@
       document.getElementById('archivo-input').click();
     }
 
-    /**
-     * Mostrar en consola cuando se selecciona un archivo
-     */
-    document.getElementById('archivo-input').addEventListener('change', function() {
-      if (this.files && this.files[0]) {
-        console.log('Archivo seleccionado: ' + this.files[0].name);
-      }
-    });
+     /**
+      * Mostrar vista previa del archivo seleccionado
+      */
+     document.getElementById('archivo-input').addEventListener('change', function() {
+       if (this.files && this.files[0]) {
+         const archivo = this.files[0];
+         const nombre = archivo.name;
+         const tipo = archivo.type;
+         const esImg = tipo.includes('image');
+
+         // Crear HTML de vista previa
+         const previewHtml = `<div class="file-preview" id="preview-adjunto">
+           <i class="bi bi-${esImg ? 'image' : 'file-earmark'}"></i>
+           <span>${nombre}</span>
+           <button type="button" class="btn btn-sm btn-link ms-auto" onclick="limpiarArchivo()" style="padding:0">
+             <i class="bi bi-x-lg"></i>
+           </button>
+         </div>`;
+
+         // Limpiar vista previa anterior si existe
+         const previewAnterior = document.getElementById('preview-adjunto');
+         if (previewAnterior) previewAnterior.remove();
+
+         // Agregar nueva vista previa DESPUÉS del textarea
+         const textarea = document.getElementById('msg-input');
+         const tempDiv = document.createElement('div');
+         tempDiv.innerHTML = previewHtml;
+         textarea.parentNode.insertBefore(tempDiv.firstElementChild, textarea.nextSibling);
+       }
+     });
+
+     /**
+      * Limpiar selección de archivo y vista previa
+      */
+     function limpiarArchivo() {
+       document.getElementById('archivo-input').value = '';
+       const preview = document.getElementById('preview-adjunto');
+       if (preview) preview.remove();
+     }
 
     function autoResize(el) {
       el.style.height = 'auto';
