@@ -100,23 +100,26 @@
     <button class="emoji-btn" onclick="insertEmoji('😤')">😤</button>
   </div>
 
-  <!-- Input file oculto para seleccionar archivos -->
-  <input type="file" id="archivo-input" style="display:none;" />
+   <!-- Input file oculto para seleccionar archivos - MÚLTIPLES -->
+   <input type="file" id="archivo-input" style="display:none;" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" />
 
-  <!-- Barra de entrada de mensajes -->
-  <div class="input-bar" style="position:relative">
-    <button class="attach-btn" title="Adjuntar archivo" onclick="abrirSelectorArchivo()">
-      <i class="bi bi-paperclip"></i>
-    </button>
-    <button class="attach-btn" title="Emojis" onclick="toggleEmojiPicker(event)">
-      <i class="bi bi-emoji-smile"></i>
-    </button>
-    <textarea class="msg-input" id="msg-input" placeholder="Escribe un mensaje..."
-              rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-    <button class="send-btn" onclick="sendMessage()" id="send-btn">
-      <i class="bi bi-send-fill"></i>
-    </button>
-  </div>
+   <!-- Barra de entrada de mensajes -->
+   <div class="input-bar" style="position:relative">
+     <!-- Contenedor de vista previa de archivos (arriba) -->
+     <div id="files-preview-container" class="files-preview-container"></div>
+
+     <button class="attach-btn" title="Adjuntar archivo" onclick="abrirSelectorArchivo()">
+       <i class="bi bi-paperclip"></i>
+     </button>
+     <button class="attach-btn" title="Emojis" onclick="toggleEmojiPicker(event)">
+       <i class="bi bi-emoji-smile"></i>
+     </button>
+     <textarea class="msg-input" id="msg-input" placeholder="Escribe un mensaje..."
+               rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+     <button class="send-btn" onclick="sendMessage()" id="send-btn">
+       <i class="bi bi-send-fill"></i>
+     </button>
+   </div>
 
   <!-- Panel de participantes -->
   <div class="participants-panel" id="participants-panel" onclick="closeParticipants(event)">
@@ -277,10 +280,10 @@
                     <div style="font-size:12px;font-weight:500">${a.nombreArchivo || 'archivo'}</div>
                     <div style="font-size:10px;opacity:.7">${a.tipoArchivo || ''}</div>
                   </div>
-                  <a href="${rutaDescarga}" download="${a.nombreArchivo || 'descarga'}"
-                     class="btn btn-sm btn-link" style="padding:0;color:${mine ? '#fff' : 'var(--primary)'};text-decoration:none"
-                     title="Descargar">
-                    <i class="bi bi-download"></i>
+                  <a href="${rutaDescarga}" target="_blank"
+                       class="btn btn-sm btn-link" style="padding:0;color:${mine ? '#fff' : 'var(--primary)'};text-decoration:none"
+                       title="Ver/descargar">
+                      <i class="bi bi-download"></i>
                   </a>
                 </div>`;
               });
@@ -378,12 +381,12 @@
       const input = document.getElementById('msg-input');
       const texto  = input.value.trim();
       const archivoInput = document.getElementById('archivo-input');
-      const tieneArchivo = archivoInput.files && archivoInput.files[0];
+      const tieneArchivos = archivoInput.files && archivoInput.files.length > 0;
 
-    // Validar que haya AL MENOS texto o archivo
-    if (!texto && !tieneArchivo) {
-        return;  // No hacer nada si no hay nada que enviar
-    }
+      // Validar que haya AL MENOS texto o archivo
+      if (!texto && !tieneArchivos) {
+        return;
+      }
 
       const btn = document.getElementById('send-btn');
       btn.disabled = true;
@@ -391,23 +394,29 @@
       autoResize(input);
 
       try {
-          const formData = new FormData();
-          formData.append('contenido', texto);  // Puede estar vacío
+        const formData = new FormData();
+        formData.append('contenido', texto);
 
-          // Añadir archivo si existe
-          if (tieneArchivo) {
-              formData.append('archivo', archivoInput.files[0]);
-              archivoInput.value = '';  // Limpiar selección
+        // Agregar TODOS los archivos
+        if (tieneArchivos) {
+          for (let i = 0; i < archivoInput.files.length; i++) {
+            formData.append('archivo', archivoInput.files[i]);
           }
+        }
 
-          const res = await fetch(`/api/chats/${convId}/messages`, {
-              method: 'POST',
-              headers: { Authorization: 'Bearer ' + token },
-              body: formData
-          });
-          if (res.ok) await pollMessages();
+        const res = await fetch(`/api/chats/${convId}/messages`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: formData
+        });
+
+        if (res.ok) {
+          archivoInput.value = '';  // Limpiar selección
+          limpiarVistaPrevia();      // Limpiar vista previa
+          await pollMessages();
+        }
       } catch {} finally {
-          btn.disabled = false;
+        btn.disabled = false;
       }
     }
 
@@ -426,43 +435,66 @@
     }
 
      /**
-      * Mostrar vista previa del archivo seleccionado
+      * Mostrar vista previa de MÚLTIPLES archivos
       */
      document.getElementById('archivo-input').addEventListener('change', function() {
-       if (this.files && this.files[0]) {
-         const archivo = this.files[0];
-         const nombre = archivo.name;
-         const tipo = archivo.type;
-         const esImg = tipo.includes('image');
-
-         // Crear HTML de vista previa
-         const previewHtml = `<div class="file-preview" id="preview-adjunto">
-           <i class="bi bi-${esImg ? 'image' : 'file-earmark'}"></i>
-           <span>${nombre}</span>
-           <button type="button" class="btn btn-sm btn-link ms-auto" onclick="limpiarArchivo()" style="padding:0">
-             <i class="bi bi-x-lg"></i>
-           </button>
-         </div>`;
-
-         // Limpiar vista previa anterior si existe
-         const previewAnterior = document.getElementById('preview-adjunto');
-         if (previewAnterior) previewAnterior.remove();
-
-         // Agregar nueva vista previa DESPUÉS del textarea
-         const textarea = document.getElementById('msg-input');
-         const tempDiv = document.createElement('div');
-         tempDiv.innerHTML = previewHtml;
-         textarea.parentNode.insertBefore(tempDiv.firstElementChild, textarea.nextSibling);
-       }
+       mostrarVistaPrevia();
      });
 
+     function mostrarVistaPrevia() {
+       const archivoInput = document.getElementById('archivo-input');
+       const container = document.getElementById('files-preview-container');
+
+       // Limpiar vista previa anterior
+       container.innerHTML = '';
+
+       // Mostrar todos los archivos seleccionados
+       if (archivoInput.files && archivoInput.files.length > 0) {
+         for (let i = 0; i < archivoInput.files.length; i++) {
+           const archivo = archivoInput.files[i];
+           const nombre = archivo.name;
+           const tipo = archivo.type;
+           const esImg = tipo.includes('image');
+
+           const previewItem = document.createElement('div');
+           previewItem.className = 'file-preview-item';
+           previewItem.innerHTML = `
+             <i class="bi bi-${esImg ? 'image' : 'file-earmark'}"></i>
+             <span>${nombre}</span>
+             <button type="button" class="btn btn-sm btn-link" onclick="eliminarArchivo(${i})" style="padding:0">
+               <i class="bi bi-x-lg"></i>
+             </button>
+           `;
+           container.appendChild(previewItem);
+         }
+       }
+     }
+
      /**
-      * Limpiar selección de archivo y vista previa
+      * Eliminar un archivo específico de la selección
       */
-     function limpiarArchivo() {
+     function eliminarArchivo(indice) {
+       const archivoInput = document.getElementById('archivo-input');
+       const dataTransfer = new DataTransfer();
+
+       // Copiar todos los archivos excepto el que se va a eliminar
+       for (let i = 0; i < archivoInput.files.length; i++) {
+         if (i !== indice) {
+           dataTransfer.items.add(archivoInput.files[i]);
+         }
+       }
+
+       // Actualizar el input
+       archivoInput.files = dataTransfer.files;
+       mostrarVistaPrevia();
+     }
+
+     /**
+      * Limpiar selección de archivos y vista previa
+      */
+     function limpiarVistaPrevia() {
        document.getElementById('archivo-input').value = '';
-       const preview = document.getElementById('preview-adjunto');
-       if (preview) preview.remove();
+       document.getElementById('files-preview-container').innerHTML = '';
      }
 
     function autoResize(el) {
