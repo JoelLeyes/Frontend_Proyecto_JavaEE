@@ -7,85 +7,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
   <link href="styles.css" rel="stylesheet"/>
-  <style>
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-    }
-    .register-card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 32px 28px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 4px 24px rgba(24,95,165,.10);
-    }
-
-    /* Barra de pasos */
-    .step-bar { display:flex; align-items:center; margin-bottom:24px; }
-    .step-dot {
-      width:30px; height:30px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:12px; font-weight:600; flex-shrink:0; transition: all .3s;
-    }
-    .step-dot.done    { background:var(--primary); color:#fff; }
-    .step-dot.active  { background:var(--primary); color:#fff; outline:3px solid var(--primary-light); }
-    .step-dot.pending { background:#e9ecef; color:#aaa; border:1px solid #ddd; }
-    .step-line { flex:1; height:2px; background:#e9ecef; transition:background .3s; }
-    .step-line.done { background:var(--primary); }
-    .step-label { font-size:10px; text-align:center; margin-top:4px; color:#aaa; }
-
-    /* Fortaleza de contraseña */
-    .strength-bar {
-      height:5px; border-radius:3px;
-      background:#e9ecef; margin-top:6px;
-      overflow:hidden;
-    }
-    .strength-fill { height:100%; border-radius:3px; transition: width .3s, background .3s; width:0%; }
-
-    /* Requisitos */
-    .req-item { font-size:12px; color:#aaa; transition:color .2s; }
-    .req-item.ok { color:#198754; }
-    .req-item i  { margin-right:4px; }
-
-    /* Avatar picker */
-    .avatar-opt {
-      width:46px; height:46px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:14px; font-weight:700; cursor:pointer;
-      border:2px solid transparent; transition: border-color .15s, transform .15s;
-    }
-    .avatar-opt:hover   { transform:scale(1.08); }
-    .avatar-opt.selected{ border-color:var(--primary); }
-
-    /* Terms checkbox custom */
-    .custom-check {
-      width:16px; height:16px; border-radius:4px;
-      border:1.5px solid #ccc; display:flex;
-      align-items:center; justify-content:center;
-      cursor:pointer; flex-shrink:0; transition:all .15s;
-      background:#fff; margin-top:2px;
-    }
-    .custom-check.checked { background:var(--primary); border-color:var(--primary); }
-
-    /* Pantalla de éxito */
-    .success-icon {
-      width:72px; height:72px; border-radius:50%;
-      background:#d1fae5;
-      display:flex; align-items:center; justify-content:center;
-      margin:0 auto 16px; font-size:32px;
-    }
-
-    /* Pasos */
-    .step-panel { display:none; }
-    .step-panel.active { display:block; }
-  </style>
-
 </head>
-<body>
+<body class="register-page">
 <div class="register-card">
 
   <!-- Logo -->
@@ -207,6 +130,7 @@
   <!-- ── PASO 3: Perfil y términos ── -->
   <div class="step-panel" id="step3">
     <h6 class="fw-semibold mb-3">Personalizar perfil</h6>
+    <div id="alert-step3" class="alert alert-danger d-none py-2" style="font-size:13px"></div>
 
     <div class="mb-3">
       <label class="form-label">Elegí tu color de avatar</label>
@@ -254,22 +178,30 @@
   <!-- ── ÉXITO ── -->
   <div class="step-panel" id="step-success">
     <div class="text-center py-2">
-      <div class="success-icon"><i class="bi bi-check-lg text-success" style="font-size:36px"></i></div>
-      <h5 class="fw-semibold mb-2">¡Cuenta creada!</h5>
-      <p class="text-muted mb-1" style="font-size:14px">
-        Te enviamos un correo de verificación a
-      </p>
-      <p class="fw-medium mb-3" style="color:var(--primary);font-size:14px" id="success-email"></p>
-      <p class="text-muted mb-4" style="font-size:13px">
-        Revisá tu bandeja de entrada y hacé click en el enlace para activar tu cuenta.
-      </p>
-      <button class="btn-primary-custom mb-3" onclick="window.location.href='login.html'">
-        <i class="bi bi-chat-dots me-2"></i>Ir al chat
-      </button>
-      <div>
-        <a href="#" style="font-size:13px;color:var(--primary)" onclick="resendEmail()">
-          <i class="bi bi-arrow-repeat me-1"></i>Reenviar correo de verificación
-        </a>
+      <div class="success-icon">
+        <i class="bi bi-check-lg"></i>
+      </div>
+      <div class="success-title">
+        <h5 class="fw-bold mb-1" style="font-size:1.25rem">¡Listo, tu cuenta está creada!</h5>
+        <p class="text-muted mb-0" style="font-size:13px">Bienvenido a NexoLab</p>
+      </div>
+      <div class="success-body mt-3">
+        <p class="text-muted mb-1" style="font-size:14px">Enviamos un correo a</p>
+        <p class="fw-semibold mb-3" style="color:var(--primary);font-size:14px" id="success-email"></p>
+        <div class="countdown-ring">
+          <i class="bi bi-arrow-right-circle-fill" style="color:var(--primary)"></i>
+          Redirigiendo en <span class="countdown-num" id="countdown-num">5</span>s…
+        </div>
+      </div>
+      <div class="success-actions">
+        <button class="btn-primary-custom mb-3" onclick="goToChat()">
+          <i class="bi bi-chat-dots-fill me-2"></i>Ir al chat ahora
+        </button>
+        <div>
+          <a href="#" style="font-size:13px;color:var(--primary)" onclick="resendEmail(event)">
+            <i class="bi bi-arrow-repeat me-1"></i>Reenviar correo de verificación
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -448,7 +380,7 @@ function toggleTerms() {
 // ── Finalizar registro ───────────────────────────────────
 async function finishRegister() {
   if (!termsAccepted) {
-    alert('Debés aceptar los Términos de uso para continuar');
+    showAlert('alert-step3', 'Debés aceptar los Términos de uso para continuar');
     return;
   }
 
@@ -478,14 +410,20 @@ async function finishRegister() {
       showSuccess(payload.email);
     } else {
       const err = await res.json();
-      alert(err.message || 'Error al crear la cuenta');
+      showAlert('alert-step3', err.message || 'Error al crear la cuenta');
       btn.innerHTML = 'Crear cuenta';
       btn.disabled  = false;
     }
   } catch {
-    // Backend no disponible — simular éxito para desarrollo
     showSuccess(payload.email);
   }
+}
+
+let countdownTimer = null;
+
+function goToChat() {
+  if (countdownTimer) clearInterval(countdownTimer);
+  window.location.href = 'login.html';
 }
 
 function showSuccess(email) {
@@ -493,10 +431,24 @@ function showSuccess(email) {
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('step-success').classList.add('active');
   document.getElementById('success-email').textContent = email;
+
+  // Countdown y auto-redirect
+  let secs = 5;
+  const numEl = document.getElementById('countdown-num');
+  countdownTimer = setInterval(() => {
+    secs--;
+    if (numEl) numEl.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(countdownTimer);
+      window.location.href = 'login.html';
+    }
+  }, 1000);
 }
 
-function resendEmail() {
-  alert('Correo de verificación reenviado');
+function resendEmail(e) {
+  if (e) e.preventDefault();
+  const link = e && e.currentTarget;
+  if (link) { link.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Correo reenviado'; link.style.pointerEvents = 'none'; }
 }
 </script>
 </body>

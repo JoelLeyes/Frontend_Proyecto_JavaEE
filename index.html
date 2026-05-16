@@ -3,94 +3,225 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NexoLab — Bienvenido</title>
+  <title>NexoLab — Comunicación empresarial</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
   <link href="styles.css" rel="stylesheet"/>
-  <style>
-    body {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--bg) 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-    }
-    .welcome-card {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      padding: 60px 40px;
-      text-align: center;
-      max-width: 500px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-    }
-    .logo-box {
-      margin: 0 auto 20px;
-      width: 80px;
-      height: 80px;
-      font-size: 32px;
-    }
-    .welcome-title {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: var(--primary);
-    }
-    .welcome-subtitle {
-      font-size: 1.1rem;
-      margin-bottom: 32px;
-      color: #666;
-    }
-    .btn-welcome {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 12px 32px;
-      border-radius: 50px;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-block;
-      margin: 8px;
-      transition: all 0.3s ease;
-    }
-    .btn-welcome:hover {
-      background: #fff; /* Fondo blanco */
-      color: var(--primary); /* Texto azul (#185FA5) */
-      transform: translateY(-2px);
-    }
-    .btn-outline-welcome {
-      background: transparent;
-      color: var(--primary);
-      border: 2px solid var(--primary);
-    }
-    .btn-outline-welcome:hover {
-      background: var(--primary);
-      color: #fff;
-    }
-  </style>
 </head>
-<body>
-<div class="welcome-card">
-  <!-- Logo -->
-  <div class="logo-box"><span>NL</span></div>
+<body class="land-page">
 
-  <!-- Título -->
-  <h1 class="welcome-title">Bienvenido a NexoLab</h1>
+  <!-- Navbar -->
+  <nav class="land-nav">
+    <a href="index.html" class="brand">
+      <div class="brand-badge">NL</div>
+      NexoLab
+    </a>
+    <div class="nav-links">
+      <a href="login.html" class="btn-nav-login">Iniciar sesión</a>
+      <a href="registro.html" class="btn-nav-reg">Registrarse</a>
+    </div>
+  </nav>
 
-  <!-- Subtítulo -->
-  <p class="welcome-subtitle">
-    La plataforma de chat empresarial que conecta equipos y acelera la productividad.
-    Únete a nosotros y transforma la forma en que colaboras.
-  </p>
+  <!-- Hero -->
+  <section class="land-hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="bi bi-lightning-charge-fill"></i>
+        Comunicación empresarial en tiempo real
+      </div>
+      <h1 class="hero-title">
+        El chat que<br/><span>conecta equipos</span><br/>de verdad
+      </h1>
+      <p class="hero-sub">
+        Mensajes instantáneos, archivos compartidos, grupos y más.
+        NexoLab centraliza toda la comunicación de tu empresa en un solo lugar.
+      </p>
+      <div class="hero-ctas">
+        <a href="registro.html" class="btn-hero-primary">
+          <i class="bi bi-rocket-takeoff-fill me-2"></i>Empezar gratis
+        </a>
+        <a href="login.html" class="btn-hero-secondary">
+          Ya tengo cuenta
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong>100%</strong>
+          <span>Seguro</span>
+        </div>
+        <div class="hero-stat">
+          <strong>Grupos</strong>
+          <span>Ilimitados</span>
+        </div>
+        <div class="hero-stat">
+          <strong>Archivos</strong>
+          <span>PDF, imágenes</span>
+        </div>
+      </div>
+    </div>
 
-  <!-- Botones -->
-  <div>
-    <a href="registro.html" class="btn-welcome">Comenzar registro</a>
-    <a href="login.html" class="btn-welcome btn-outline-welcome">Ya tengo cuenta</a>
-  </div>
-</div>
+    <!-- Mockup animado -->
+    <div class="mockup-wrap">
+      <div class="chat-mockup">
+        <!-- Header -->
+        <div class="mockup-header">
+          <div class="mockup-avatar">DS</div>
+          <div class="mockup-header-info">
+            <div class="mockup-header-name">Desarrollo de Software</div>
+            <div class="mockup-header-sub">4 participantes · activo ahora</div>
+          </div>
+          <i class="bi bi-three-dots-vertical" style="color:rgba(255,255,255,.6);font-size:14px"></i>
+        </div>
+        <!-- Mensajes -->
+        <div class="mockup-msgs" id="mockup-msgs">
+          <!-- Generados por JS -->
+        </div>
+        <!-- Input -->
+        <div class="mockup-input-bar">
+          <i class="bi bi-paperclip" style="color:#94A3B8;font-size:15px"></i>
+          <div class="mockup-input">Escribe un mensaje...</div>
+          <div class="mockup-send"><i class="bi bi-send-fill" style="font-size:12px"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Features -->
+  <section class="land-features">
+    <div style="text-align:center">
+      <div class="hero-badge" style="justify-content:center">
+        <i class="bi bi-stars"></i> Todo lo que necesitás
+      </div>
+      <h2 style="font-size:1.9rem;font-weight:800;color:#0F172A;margin-top:12px;margin-bottom:6px">
+        Diseñado para equipos modernos
+      </h2>
+      <p style="color:#64748B;font-size:15px">Todo en un solo lugar, sin fricción.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon"><i class="bi bi-chat-dots-fill"></i></div>
+        <div class="feat-title">Chats directos y grupales</div>
+        <div class="feat-desc">Conversaciones privadas o en grupo con indicadores de escritura en tiempo real y reacciones.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="bi bi-paperclip"></i></div>
+        <div class="feat-title">Archivos compartidos</div>
+        <div class="feat-desc">Enviá PDFs, imágenes y documentos directamente en el chat. Sin límites de conversación.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="bi bi-reply-fill"></i></div>
+        <div class="feat-title">Respuestas y reacciones</div>
+        <div class="feat-desc">Respondé mensajes citando el original y reaccioná con emojis para dar feedback rápido.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA final -->
+  <section class="land-cta">
+    <h2>¿Listo para comunicarte mejor?</h2>
+    <p>Creá tu cuenta gratis en menos de un minuto.</p>
+    <a href="registro.html" class="btn-cta-white">
+      <i class="bi bi-person-plus-fill me-2"></i>Crear cuenta gratis
+    </a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="land-footer">
+    <span class="copy">&copy; 2026 NexoLab. Todos los derechos reservados.</span>
+    <div class="links">
+      <a href="#">Términos de uso</a>
+      <a href="#">Privacidad</a>
+      <a href="login.html">Iniciar sesión</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ── Mockup animado ──────────────────────────────────────
+    const DEMO_MSGS = [
+      { side:'in',  name:'María G.', ini:'MG', text:'¿Subieron el build nuevo al staging?' },
+      { side:'out', text:'Sí, ya está. Probalo con el endpoint /api/v2' },
+      { side:'in',  name:'Carlos R.', ini:'CR', text:'Perfecto, lo reviso ahora mismo 👍' },
+      { side:'out', text:'Avisen cuando esté ok para hacer el deploy a prod' },
+      { side:'in',  name:'María G.', ini:'MG', text:'Todo bien! Podemos deployar ✅' },
+      { side:'out', text:'Genial. Deploy programado para las 18hs 🚀' },
+    ];
+
+    let msgIndex = 0;
+    const container = document.getElementById('mockup-msgs');
+    let typingEl = null;
+    let animTimeout = null;
+
+    function createTyping() {
+      const el = document.createElement('div');
+      el.className = 'mock-typing';
+      el.style.opacity = '0';
+      el.innerHTML = '<span></span><span></span><span></span>';
+      return el;
+    }
+
+    function createBubble(msg) {
+      const wrap = document.createElement('div');
+      wrap.className = 'mock-msg ' + msg.side;
+      wrap.style.opacity = '0';
+      let inner = '';
+      if (msg.side === 'in' && msg.name) {
+        inner += `<div style="font-size:10px;color:#94A3B8;margin-bottom:2px;padding-left:2px">${msg.name}</div>`;
+      }
+      inner += `<div class="mock-bubble-txt">${msg.text}</div>`;
+      inner += `<div class="mock-time">${currentTime()}</div>`;
+      wrap.innerHTML = inner;
+      return wrap;
+    }
+
+    function currentTime() {
+      return new Date().toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function showNext() {
+      if (msgIndex >= DEMO_MSGS.length) {
+        // reiniciar ciclo
+        animTimeout = setTimeout(() => {
+          container.innerHTML = '';
+          msgIndex = 0;
+          typingEl = null;
+          animTimeout = setTimeout(showNext, 600);
+        }, 2500);
+        return;
+      }
+
+      const msg = DEMO_MSGS[msgIndex];
+
+      // Mostrar typing indicator antes del mensaje
+      typingEl = createTyping();
+      container.appendChild(typingEl);
+      container.scrollTop = container.scrollHeight;
+      setTimeout(() => { typingEl.style.opacity = '1'; }, 50);
+
+      animTimeout = setTimeout(() => {
+        if (typingEl && typingEl.parentNode) typingEl.remove();
+        typingEl = null;
+
+        const bubble = createBubble(msg);
+        container.appendChild(bubble);
+        container.scrollTop = container.scrollHeight;
+        // Fade in
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            bubble.style.transition = 'opacity .3s, transform .3s';
+            bubble.style.transform = 'translateY(0)';
+            bubble.style.opacity = '1';
+          });
+        });
+        bubble.style.transform = 'translateY(8px)';
+
+        msgIndex++;
+        animTimeout = setTimeout(showNext, 1400);
+      }, 900);
+    }
+
+    // Iniciar animación
+    setTimeout(showNext, 800);
+  </script>
 </body>
 </html>
