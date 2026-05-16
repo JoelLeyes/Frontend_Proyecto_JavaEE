@@ -109,6 +109,15 @@
   <!-- Indicador "escribiendo..." -->
   <div class="typing-indicator" id="typing-indicator"></div>
 
+  <!-- Barra de respuesta (reply) -->
+  <div class="reply-bar d-none" id="reply-bar">
+    <i class="bi bi-reply-fill"></i>
+    <span class="reply-bar-content" id="reply-bar-text"></span>
+    <button class="reply-bar-close" onclick="cancelReply()" title="Cancelar respuesta">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
    <!-- Barra de entrada de mensajes -->
    <div class="input-bar" style="position:relative">
      <!-- Contenedor de vista previa de archivos (arriba) -->
@@ -334,11 +343,20 @@
             ).join('')}</div>`
           : '';
 
+        // Quote del mensaje al que se responde
+        const quoteHtml = msg.respondeA
+          ? `<div class="reply-quote">${escapeHtml(msg.respondeA.contenido || '')}</div>`
+          : '';
+
         html += `
           <div class="msg-wrap ${mine ? 'out' : 'in'}${isCurrent ? ' search-current' : ''}" id="msg-${msgId}">
             ${sender}
             <div class="msg-bubble-row">
+              <button class="reply-btn" data-msg-id="${msgId}" title="Responder">
+                <i class="bi bi-reply"></i>
+              </button>
               <div class="bubble ${mine ? 'out' : 'in'}">
+                ${quoteHtml}
                 ${contenido}
                 ${attachHtml}
                 <div class="msg-time ${mine ? 'out' : 'in'}">
@@ -441,6 +459,7 @@
       try {
         const formData = new FormData();
         formData.append('contenido', texto);
+        if (replyMsgId) formData.append('respondaId', replyMsgId);
 
         // Agregar TODOS los archivos
         if (tieneArchivos) {
@@ -456,8 +475,9 @@
         });
 
         if (res.ok) {
-          archivoInput.value = '';  // Limpiar selección
-          limpiarVistaPrevia();      // Limpiar vista previa
+          archivoInput.value = '';
+          limpiarVistaPrevia();
+          cancelReply();
           await pollMessages();
         }
       } catch {} finally {
@@ -1021,6 +1041,43 @@
         else if (list.length === 2) el.textContent = `${list[0].nombre} y ${list[1].nombre} están escribiendo...`;
         else el.textContent = `${list.length} personas están escribiendo...`;
       } catch { /* ignorar */ }
+    }
+
+    // ── Reply ─────────────────────────────────────────────────
+    let replyMsgId = null;
+
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.reply-btn');
+      if (btn) {
+        const id = btn.dataset.msgId;
+        const msg = messages.find(m => String(m.idMensaje) === id);
+        if (msg) startReply(id, msg.contenido || '');
+      }
+    });
+
+    function startReply(msgId, text) {
+      replyMsgId = msgId;
+      const bar = document.getElementById('reply-bar');
+      bar.classList.remove('d-none');
+      document.getElementById('reply-bar-text').textContent =
+        text.replace(/\n/g, ' ').substring(0, 90) + (text.length > 90 ? '…' : '');
+      document.getElementById('msg-input').focus();
+      // Scroll suave al mensaje original
+      const el = document.getElementById('msg-' + msgId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cancelReply() {
+      replyMsgId = null;
+      document.getElementById('reply-bar').classList.add('d-none');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
 
     setInterval(pollTyping, 2500);
