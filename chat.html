@@ -31,6 +31,9 @@
       <div class="chat-dropdown-item" id="add-member-item" onclick="openAddMember()">
         <i class="bi bi-person-plus"></i> Agregar miembro
       </div>
+      <div class="chat-dropdown-item" id="rename-group-item" onclick="openRenameGroup()">
+        <i class="bi bi-pencil"></i> Renombrar grupo
+      </div>
       <div class="chat-dropdown-item danger" onclick="confirmLeaveGroup()">
         <i class="bi bi-door-open"></i> Abandonar grupo
       </div>
@@ -157,6 +160,22 @@
       </div>
       <div id="am-hint" class="text-center py-2 text-muted" style="font-size:13px">
         Escribí al menos 2 caracteres para buscar
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal renombrar grupo -->
+  <div class="modal-overlay" id="modal-rename-group">
+    <div class="modal-box" style="max-width:380px">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-pencil me-2"></i>Renombrar grupo</h6>
+        <button class="btn btn-sm btn-light" onclick="closeRenameGroup()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <input type="text" class="form-control mb-3" id="rename-input" placeholder="Nuevo nombre del grupo" maxlength="60"/>
+      <div id="rename-error" class="alert alert-danger py-2 d-none" style="font-size:13px"></div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-light flex-grow-1" onclick="closeRenameGroup()">Cancelar</button>
+        <button class="btn btn-admin-primary flex-grow-1" id="rename-btn" onclick="guardarRenombre()">Guardar</button>
       </div>
     </div>
   </div>
@@ -650,7 +669,8 @@
           document.getElementById('nav-sub').textContent = `${list.length} participantes`;
           const me = list.find(p => String(p.idUsuario) === currentUserId);
           isAdminOfGroup = me && me.rol === 'ADMINISTRADOR';
-          document.getElementById('add-member-item').style.display = isAdminOfGroup ? '' : 'none';
+          document.getElementById('add-member-item').style.display    = isAdminOfGroup ? '' : 'none';
+          document.getElementById('rename-group-item').style.display  = isAdminOfGroup ? '' : 'none';
         }
       } catch { /* sin backend */ }
     }
@@ -684,11 +704,18 @@
             const ini = initials(nombre);
             const badge = p.rol === 'ADMINISTRADOR'
               ? '<span class="participant-role-badge">Admin</span>' : '';
+            const isMe = String(p.idUsuario) === currentUserId;
+            const kickBtn = isAdminOfGroup && !isMe
+              ? `<button class="btn btn-sm ms-auto" style="color:#dc3545;padding:2px 6px"
+                   title="Expulsar" onclick="kickParticipant(${p.idUsuario},'${nombre.replace(/'/g,"\\'")}')">
+                   <i class="bi bi-person-x-fill"></i>
+                 </button>` : '';
             return `
               <div class="participant-row">
                 <div class="avatar-sm">${ini}</div>
                 <div style="font-size:14px;font-weight:500">${nombre}</div>
                 ${badge}
+                ${kickBtn}
               </div>`;
           }).join('');
         }
@@ -789,6 +816,75 @@
         }
       } catch {
         alert('No se pudo conectar con el servidor');
+      }
+    }
+
+    // ── Renombrar grupo ───────────────────────────────────────
+    function openRenameGroup() {
+      document.getElementById('chat-dropdown').classList.remove('open');
+      document.getElementById('rename-input').value = convName;
+      document.getElementById('rename-error').classList.add('d-none');
+      document.getElementById('modal-rename-group').classList.add('open');
+      setTimeout(() => document.getElementById('rename-input').focus(), 100);
+    }
+
+    function closeRenameGroup() {
+      document.getElementById('modal-rename-group').classList.remove('open');
+    }
+
+    async function guardarRenombre() {
+      const nombre = document.getElementById('rename-input').value.trim();
+      const errorEl = document.getElementById('rename-error');
+      errorEl.classList.add('d-none');
+
+      if (nombre.length < 2) {
+        errorEl.textContent = 'El nombre debe tener al menos 2 caracteres.';
+        errorEl.classList.remove('d-none');
+        return;
+      }
+
+      const btn = document.getElementById('rename-btn');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+
+      try {
+        const res = await fetch(`/api/chats/${convId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ nombre })
+        });
+        if (res.ok) {
+          document.getElementById('nav-title').textContent = nombre;
+          closeRenameGroup();
+        } else {
+          const data = await res.json();
+          errorEl.textContent = data.message || 'Error al renombrar.';
+          errorEl.classList.remove('d-none');
+        }
+      } catch {
+        errorEl.textContent = 'No se pudo conectar con el servidor.';
+        errorEl.classList.remove('d-none');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Guardar';
+      }
+    }
+
+    // ── Expulsar participante ─────────────────────────────────
+    async function kickParticipant(userId, nombre) {
+      if (!confirm(`¿Expulsar a ${nombre} del grupo?`)) return;
+      try {
+        const res = await fetch(`/api/chats/${convId}/participantes?kickUserId=${userId}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          openParticipants();
+          loadParticipantCount();
+        } else {
+          const data = await res.json();
+          alert(data.message || 'No se pudo expulsar al participante.');
+        }
+      } catch {
+        alert('No se pudo conectar con el servidor.');
       }
     }
 
