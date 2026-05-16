@@ -106,6 +106,9 @@
    <!-- Input file oculto para seleccionar archivos - MÚLTIPLES -->
    <input type="file" id="archivo-input" style="display:none;" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" />
 
+  <!-- Indicador "escribiendo..." -->
+  <div class="typing-indicator" id="typing-indicator"></div>
+
    <!-- Barra de entrada de mensajes -->
    <div class="input-bar" style="position:relative">
      <!-- Contenedor de vista previa de archivos (arriba) -->
@@ -118,7 +121,7 @@
        <i class="bi bi-emoji-smile"></i>
      </button>
      <textarea class="msg-input" id="msg-input" placeholder="Escribe un mensaje..."
-               rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+               rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); sendTypingEvent()"></textarea>
      <button class="send-btn" onclick="sendMessage()" id="send-btn">
        <i class="bi bi-send-fill"></i>
      </button>
@@ -312,16 +315,28 @@
         const isCurrent  = searchMatchIds.length > 0 && msgId === searchMatchIds[searchIndex];
         const contenido  = searchTerm ? highlightText(msg.contenido, searchTerm) : msg.contenido;
 
+        const reacciones = msg.reacciones || [];
+        const pillsHtml = reacciones.length
+          ? `<div class="msg-reactions">${reacciones.map(r =>
+              `<button class="reaction-pill${r.mine ? ' mine' : ''}"
+                       onclick="toggleReaction(${msgId},'${r.emoji}')">${r.emoji} ${r.count}</button>`
+            ).join('')}</div>`
+          : '';
+
         html += `
           <div class="msg-wrap ${mine ? 'out' : 'in'}${isCurrent ? ' search-current' : ''}" id="msg-${msgId}">
             ${sender}
-            <div class="bubble ${mine ? 'out' : 'in'}">
-              ${contenido}
-              ${attachHtml}
-              <div class="msg-time ${mine ? 'out' : 'in'}">
-                ${formatTime(sentAt)} ${ticks}
+            <div class="msg-bubble-row">
+              <div class="bubble ${mine ? 'out' : 'in'}">
+                ${contenido}
+                ${attachHtml}
+                <div class="msg-time ${mine ? 'out' : 'in'}">
+                  ${formatTime(sentAt)} ${ticks}
+                </div>
               </div>
+              <button class="reaction-trigger" onclick="showReactionPicker(event,${msgId})">😊</button>
             </div>
+            ${pillsHtml}
           </div>`;
       });
 
@@ -847,7 +862,7 @@
       btn.disabled = true; btn.textContent = 'Guardando...';
 
       try {
-        const res = await fetch(`/api/chats/${convId}`, {
+        const res = await fetch(`/api/chats/${convId}/nombre`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
           body: JSON.stringify({ nombre })
@@ -905,6 +920,99 @@
         alert('No se pudo conectar con el servidor');
       }
     }
+
+    // ── Reacciones ────────────────────────────────────────────
+    const REACTION_EMOJIS = ['👍','❤️','😂','😮','😢','🔥'];
+    let reactionPickerEl = null;
+
+    function showReactionPicker(e, msgId) {
+      e.stopPropagation();
+      closeReactionPicker();
+      reactionPickerEl = document.createElement('div');
+      reactionPickerEl.className = 'reaction-picker';
+      reactionPickerEl.innerHTML = REACTION_EMOJIS.map(em =>
+        `<button onclick="toggleReaction(${msgId},'${em}')">${em}</button>`
+      ).join('');
+      document.body.appendChild(reactionPickerEl);
+      const rect = e.currentTarget.getBoundingClientRect();
+      const top  = rect.top - 58;
+      const left = Math.min(rect.left - 20, window.innerWidth - 240);
+      reactionPickerEl.style.cssText = `top:${top}px;left:${left}px`;
+    }
+
+    function closeReactionPicker() {
+      if (reactionPickerEl) { reactionPickerEl.remove(); reactionPickerEl = null; }
+    }
+
+    document.addEventListener('click', closeReactionPicker);
+
+    async function toggleReaction(msgId, emoji) {
+      closeReactionPicker();
+      // Actualización optimista en memoria
+      const msg = messages.find(m => String(m.idMensaje) === String(msgId));
+      if (msg) {
+        msg.reacciones = msg.reacciones || [];
+        const ex = msg.reacciones.find(r => r.emoji === emoji);
+        if (ex) {
+          ex.mine ? (ex.count > 1 ? (ex.count--, ex.mine = false)
+                                  : (msg.reacciones = msg.reacciones.filter(r => r.emoji !== emoji)))
+                  : (ex.count++, ex.mine = true);
+        } else {
+          msg.reacciones.push({ emoji, count: 1, mine: true });
+        }
+        updateMsgReactions(msgId, msg.reacciones);
+      }
+      try {
+        await fetch(`/api/chats/${convId}/reacciones`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ msgId, emoji })
+        });
+      } catch { /* ignorar */ }
+    }
+
+    function updateMsgReactions(msgId, reacciones) {
+      const wrap = document.getElementById(`msg-${msgId}`);
+      if (!wrap) return;
+      let el = wrap.querySelector('.msg-reactions');
+      if (!reacciones.length) { if (el) el.remove(); return; }
+      if (!el) { el = document.createElement('div'); el.className = 'msg-reactions'; wrap.appendChild(el); }
+      el.innerHTML = reacciones.map(r =>
+        `<button class="reaction-pill${r.mine ? ' mine' : ''}"
+                 onclick="toggleReaction(${msgId},'${r.emoji}')">${r.emoji} ${r.count}</button>`
+      ).join('');
+    }
+
+    // ── Typing indicator ──────────────────────────────────────
+    let typingDebounce = null;
+
+    function sendTypingEvent() {
+      clearTimeout(typingDebounce);
+      fetch(`/api/chats/${convId}/typing`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+      }).catch(() => {});
+      // Reenviar cada 3s mientras sigue escribiendo
+      typingDebounce = setTimeout(sendTypingEvent, 3000);
+    }
+
+    async function pollTyping() {
+      try {
+        const res = await fetch(`/api/chats/${convId}/typing`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const list = await res.json();
+        const el = document.getElementById('typing-indicator');
+        if (!el) return;
+        if (!list.length) { el.textContent = ''; return; }
+        if (list.length === 1) el.textContent = `${list[0].nombre} está escribiendo...`;
+        else if (list.length === 2) el.textContent = `${list[0].nombre} y ${list[1].nombre} están escribiendo...`;
+        else el.textContent = `${list.length} personas están escribiendo...`;
+      } catch { /* ignorar */ }
+    }
+
+    setInterval(pollTyping, 2500);
 
     initThemeToggle('theme-toggle');
     initChat();
