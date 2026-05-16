@@ -326,14 +326,16 @@
                              onerror="this.parentElement.innerHTML='<div class=\\'attachment-img-error\\'><i class=\\'bi bi-image text-muted\\'></i><span>No se pudo cargar</span></div>'"/>
                       </div>`;
                   } else {
+                    const icon  = fileIcon(a.tipoArchivo);
+                    const label = friendlyFileType(a.tipoArchivo, a.nombreArchivo);
                     attachHtml += `
                       <div class="attachment-bubble ${mine ? '' : 'in'}">
                         <div class="file-icon" style="background:${mine ? 'rgba(255,255,255,.2)' : '#E6F1FB'}">
-                          <i class="bi bi-file-earmark-pdf" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
+                          <i class="bi ${icon}" style="color:${mine ? '#fff' : 'var(--primary)'}"></i>
                         </div>
                         <div style="flex:1">
-                          <div style="font-size:12px;font-weight:500">${a.nombreArchivo || 'archivo'}</div>
-                          <div style="font-size:10px;opacity:.7">${a.tipoArchivo || ''}</div>
+                          <div style="font-size:12px;font-weight:500">${escapeHtml(a.nombreArchivo || 'archivo')}</div>
+                          <div style="font-size:10px;opacity:.7">${label}</div>
                         </div>
                         <a href="${rutaDescarga}" target="_blank"
                              class="btn btn-sm btn-link" style="padding:0;color:${mine ? '#fff' : 'var(--primary)'};text-decoration:none"
@@ -1118,6 +1120,41 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    function friendlyFileType(mime, filename) {
+      const m = (mime || '').toLowerCase();
+      if (m.includes('pdf'))                          return 'PDF';
+      if (m.includes('word') || m.includes('msword')) return 'Word';
+      if (m.includes('sheet') || m.includes('excel')) return 'Excel';
+      if (m.includes('presentation') || m.includes('powerpoint')) return 'PowerPoint';
+      if (m === 'text/plain')                         return 'Texto';
+      if (m === 'text/csv')                           return 'CSV';
+      if (m.includes('zip'))                          return 'ZIP';
+      if (m.includes('rar'))                          return 'RAR';
+      if (m.startsWith('image/'))                     return 'Imagen';
+      if (m.startsWith('video/'))                     return 'Video';
+      if (m.startsWith('audio/'))                     return 'Audio';
+      // Fallback: extensión del nombre de archivo
+      if (filename) {
+        const ext = filename.split('.').pop();
+        if (ext && ext.length <= 5) return ext.toUpperCase();
+      }
+      return 'Archivo';
+    }
+
+    function fileIcon(mime) {
+      const m = (mime || '').toLowerCase();
+      if (m.includes('pdf'))                           return 'bi-file-earmark-pdf';
+      if (m.includes('word') || m.includes('msword'))  return 'bi-file-earmark-word';
+      if (m.includes('sheet') || m.includes('excel'))  return 'bi-file-earmark-excel';
+      if (m.includes('presentation') || m.includes('powerpoint')) return 'bi-file-earmark-ppt';
+      if (m === 'text/plain' || m === 'text/csv')      return 'bi-file-earmark-text';
+      if (m.includes('zip') || m.includes('rar'))      return 'bi-file-earmark-zip';
+      if (m.startsWith('image/'))                      return 'bi-file-earmark-image';
+      if (m.startsWith('video/'))                      return 'bi-file-earmark-play';
+      if (m.startsWith('audio/'))                      return 'bi-file-earmark-music';
+      return 'bi-file-earmark';
     }
 
     setInterval(pollTyping, 2500);

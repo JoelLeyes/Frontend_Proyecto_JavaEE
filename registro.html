@@ -186,8 +186,10 @@
         <p class="text-muted mb-0" style="font-size:13px">Bienvenido a NexoLab</p>
       </div>
       <div class="success-body mt-3">
-        <p class="text-muted mb-1" style="font-size:14px">Enviamos un correo a</p>
-        <p class="fw-semibold mb-3" style="color:var(--primary);font-size:14px" id="success-email"></p>
+        <div id="email-sent-section">
+          <p class="text-muted mb-1" style="font-size:14px">Enviamos un correo de bienvenida a</p>
+          <p class="fw-semibold mb-3" style="color:var(--primary);font-size:14px" id="success-email"></p>
+        </div>
         <div class="countdown-ring">
           <i class="bi bi-arrow-right-circle-fill" style="color:var(--primary)"></i>
           Redirigiendo en <span class="countdown-num" id="countdown-num">5</span>s…
@@ -197,10 +199,11 @@
         <button class="btn-primary-custom mb-3" onclick="goToChat()">
           <i class="bi bi-chat-dots-fill me-2"></i>Ir al chat ahora
         </button>
-        <div>
-          <a href="#" style="font-size:13px;color:var(--primary)" onclick="resendEmail(event)">
-            <i class="bi bi-arrow-repeat me-1"></i>Reenviar correo de verificación
+        <div id="resend-section">
+          <a href="#" style="font-size:13px;color:var(--primary)" id="resend-link" onclick="resendEmail(event)">
+            <i class="bi bi-arrow-repeat me-1"></i>Reenviar correo de bienvenida
           </a>
+          <div id="resend-msg" class="d-none" style="font-size:13px;color:#64748B"></div>
         </div>
       </div>
     </div>
@@ -213,6 +216,7 @@
 let currentStep = 1;
 let termsAccepted = false;
 let selectedAvatar = { bg:'#E6F1FB', color:'#0C447C' };
+let registeredEmail = '';
 
 // ── Navegación de pasos ──────────────────────────────────
 function goStep(n) {
@@ -406,16 +410,18 @@ async function finishRegister() {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
     });
+    const data = await res.json();
     if (res.ok) {
-      showSuccess(payload.email);
+      showSuccess(payload.email, data.welcomeEmailSent === true);
     } else {
-      const err = await res.json();
-      showAlert('alert-step3', err.message || 'Error al crear la cuenta');
+      showAlert('alert-step3', data.message || 'Error al crear la cuenta');
       btn.innerHTML = 'Crear cuenta';
       btn.disabled  = false;
     }
   } catch {
-    showSuccess(payload.email);
+    showAlert('alert-step3', 'Error de conexión. Verificá tu internet e intentá de nuevo.');
+    btn.innerHTML = 'Crear cuenta';
+    btn.disabled  = false;
   }
 }
 
@@ -426,11 +432,23 @@ function goToChat() {
   window.location.href = 'login.html';
 }
 
-function showSuccess(email) {
+function showSuccess(email, emailSent) {
+  registeredEmail = email;
   document.getElementById('step-bar-wrap').style.display = 'none';
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('step-success').classList.add('active');
   document.getElementById('success-email').textContent = email;
+
+  // Mostrar u ocultar la sección del correo según si se envió
+  const emailSection  = document.getElementById('email-sent-section');
+  const resendSection = document.getElementById('resend-section');
+  if (emailSent) {
+    emailSection.classList.remove('d-none');
+    resendSection.classList.remove('d-none');
+  } else {
+    emailSection.classList.add('d-none');
+    resendSection.classList.add('d-none');
+  }
 
   // Countdown y auto-redirect
   let secs = 5;
@@ -445,10 +463,32 @@ function showSuccess(email) {
   }, 1000);
 }
 
-function resendEmail(e) {
+async function resendEmail(e) {
   if (e) e.preventDefault();
-  const link = e && e.currentTarget;
-  if (link) { link.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Correo reenviado'; link.style.pointerEvents = 'none'; }
+  const link    = document.getElementById('resend-link');
+  const msg     = document.getElementById('resend-msg');
+  if (!registeredEmail) return;
+
+  link.classList.add('d-none');
+  msg.classList.remove('d-none');
+  msg.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px"></span>Enviando…';
+
+  try {
+    const res = await fetch('/api/auth/resend-welcome', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email: registeredEmail }),
+    });
+    if (res.ok) {
+      msg.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Correo reenviado';
+    } else {
+      msg.innerHTML = '<i class="bi bi-x-circle-fill text-danger me-1"></i>No se pudo reenviar';
+      link.classList.remove('d-none');
+    }
+  } catch {
+    msg.innerHTML = '<i class="bi bi-x-circle-fill text-danger me-1"></i>Error de conexión';
+    link.classList.remove('d-none');
+  }
 }
 </script>
 </body>
