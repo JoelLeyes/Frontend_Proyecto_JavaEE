@@ -192,6 +192,20 @@
     </div>
   </div>
 
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Modal de confirmación genérico -->
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="modal-box confirm-box">
+      <p id="confirm-msg"></p>
+      <div class="d-flex gap-2">
+        <button class="btn btn-light flex-grow-1" id="confirm-no">Cancelar</button>
+        <button class="btn btn-danger flex-grow-1" id="confirm-yes">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -855,13 +869,13 @@
         if (res.ok) {
           closeAddMember();
           loadParticipantCount();
-          alert(`${nombre} fue agregado al grupo.`);
+          showToast(`${nombre} fue agregado al grupo.`, 'success');
         } else {
           const err = await res.json().catch(() => ({}));
-          alert(err.message || 'No se pudo agregar el miembro');
+          showToast(err.message || 'No se pudo agregar el miembro', 'error');
         }
       } catch {
-        alert('No se pudo conectar con el servidor');
+        showToast('No se pudo conectar con el servidor', 'error');
       }
     }
 
@@ -915,41 +929,44 @@
     }
 
     // ── Expulsar participante ─────────────────────────────────
-    async function kickParticipant(userId, nombre) {
-      if (!confirm(`¿Expulsar a ${nombre} del grupo?`)) return;
-      try {
-        const res = await fetch(`/api/chats/${convId}/participantes?kickUserId=${userId}`, {
-          method: 'DELETE',
-          headers: { Authorization: 'Bearer ' + token }
-        });
-        if (res.ok) {
-          openParticipants();
-          loadParticipantCount();
-        } else {
-          const data = await res.json();
-          alert(data.message || 'No se pudo expulsar al participante.');
+    function kickParticipant(userId, nombre) {
+      showConfirm(`¿Expulsar a ${nombre} del grupo?`, async () => {
+        try {
+          const res = await fetch(`/api/chats/${convId}/participantes?kickUserId=${userId}`, {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (res.ok) {
+            openParticipants();
+            loadParticipantCount();
+            showToast(`${nombre} fue expulsado del grupo.`);
+          } else {
+            const data = await res.json();
+            showToast(data.message || 'No se pudo expulsar al participante.', 'error');
+          }
+        } catch {
+          showToast('No se pudo conectar con el servidor.', 'error');
         }
-      } catch {
-        alert('No se pudo conectar con el servidor.');
-      }
+      });
     }
 
-    async function confirmLeaveGroup() {
+    function confirmLeaveGroup() {
       document.getElementById('chat-dropdown').classList.remove('open');
-      if (!confirm('¿Abandonar el grupo? No podrás volver a ver los mensajes.')) return;
-      try {
-        const res = await fetch(`/api/chats/${convId}/participantes`, {
-          method:  'DELETE',
-          headers: { Authorization: 'Bearer ' + token }
-        });
-        if (res.ok) {
-          window.location.href = 'conversations.html';
-        } else {
-          alert('No se pudo abandonar el grupo');
+      showConfirm('¿Abandonar el grupo? No podrás volver a ver los mensajes.', async () => {
+        try {
+          const res = await fetch(`/api/chats/${convId}/participantes`, {
+            method:  'DELETE',
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (res.ok) {
+            window.location.href = 'conversations.html';
+          } else {
+            showToast('No se pudo abandonar el grupo', 'error');
+          }
+        } catch {
+          showToast('No se pudo conectar con el servidor', 'error');
         }
-      } catch {
-        alert('No se pudo conectar con el servidor');
-      }
+      });
     }
 
     // ── Reacciones ────────────────────────────────────────────
@@ -1041,6 +1058,29 @@
         else if (list.length === 2) el.textContent = `${list[0].nombre} y ${list[1].nombre} están escribiendo...`;
         else el.textContent = `${list.length} personas están escribiendo...`;
       } catch { /* ignorar */ }
+    }
+
+    // ── Toast & Confirm ──────────────────────────────────────
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = 'toast-msg' + (type !== 'info' ? ' ' + type : '');
+      el.textContent = msg;
+      c.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    function showConfirm(msg, onConfirm) {
+      document.getElementById('confirm-msg').textContent = msg;
+      const overlay = document.getElementById('modal-confirm');
+      overlay.classList.add('open');
+      document.getElementById('confirm-yes').onclick = () => {
+        overlay.classList.remove('open');
+        onConfirm();
+      };
+      document.getElementById('confirm-no').onclick = () => {
+        overlay.classList.remove('open');
+      };
     }
 
     // ── Reply ─────────────────────────────────────────────────
