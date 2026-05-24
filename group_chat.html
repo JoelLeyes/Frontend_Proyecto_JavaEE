@@ -510,16 +510,30 @@ function appendMessage(msg) {
   const wrap = document.createElement('div');
   wrap.className = `mwrap ${msg.type}`;
 
+  const buildAttachmentUrl = (a) => {
+    const raw = (a.url || a.urlArchivo || a.rutaArchivo || '').trim();
+    if (raw) {
+      if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+      if (raw.startsWith('/api/uploads/')) return raw;
+      if (raw.startsWith('/uploads/')) return '/api' + raw;
+      if (raw.startsWith('uploads/')) return '/api/' + raw;
+      if (raw.startsWith('/')) return '/api' + raw;
+      return '/api/uploads/' + raw.replace(/^\/+/, '');
+    }
+    return '/api/uploads/' + encodeURIComponent(a.nombre || a.nombreArchivo || 'archivo');
+  };
+
   let attachHtml = '';
   if (msg.attachments && Array.isArray(msg.attachments)) {
     msg.attachments.forEach(a => {
       const tipo = (a.tipoArchivo || '').toUpperCase();
       const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
       const isPdf = tipo.includes('PDF');
+      const ruta = buildAttachmentUrl(a);
       let preview = '';
 
       if (isImg) {
-        preview = `<img src="${a.url}" alt="${a.nombre}" style="max-width:180px; max-height:120px; border-radius:8px; margin-top:6px;" />`;
+        preview = `<img src="${ruta}" alt="${a.nombre}" style="max-width:180px; max-height:120px; border-radius:8px; margin-top:6px;" />`;
       }
 
       attachHtml += `
@@ -531,7 +545,9 @@ function appendMessage(msg) {
             <div class="att-name">${a.nombre}</div>
             <div class="att-size">${a.tamano}</div>
           </div>
-          <i class="bi bi-download ms-auto" style="color:${msg.type === 'out' ? 'rgba(255,255,255,.65)' : '#888'}; font-size:14px"></i>
+          <a href="${ruta}" target="_blank" rel="noopener noreferrer" class="ms-auto" title="Descargar" style="color:${msg.type === 'out' ? 'rgba(255,255,255,.65)' : '#888'}; font-size:14px; text-decoration:none;">
+            <i class="bi bi-download"></i>
+          </a>
           ${preview}
         </div>`;
     });

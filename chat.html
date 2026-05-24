@@ -311,11 +311,24 @@
           // Adjunto (si existe)
           let attachHtml = '';
           const atts = msg.adjuntos || [];
+          const buildAttachmentUrl = (a) => {
+                  const raw = (a.urlArchivo || a.rutaArchivo || '').trim();
+                  if (raw) {
+                    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+                    if (raw.startsWith('/api/uploads/')) return raw;
+                    if (raw.startsWith('/uploads/')) return '/api' + raw;
+                    if (raw.startsWith('uploads/')) return '/api/' + raw;
+                    if (raw.startsWith('/')) return '/api' + raw;
+                    return '/api/uploads/' + raw.replace(/^\/+/, '');
+                  }
+                  return '/api/uploads/' + encodeURIComponent(a.nombreArchivo || 'archivo');
+                };
+
           if (atts.length > 0) {
               atts.forEach(a => {
                   const tipo = (a.tipoArchivo || '').toUpperCase();
                   const isImg = tipo.includes('IMAGE') || tipo.includes('IMG');
-                  const rutaDescarga = a.urlArchivo || a.rutaArchivo || '/uploads/' + a.nombreArchivo;
+                  const rutaDescarga = buildAttachmentUrl(a);
 
                   if (isImg) {
                     attachHtml += `
