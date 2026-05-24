@@ -155,4 +155,8 @@ jobs:
 
       - name: Trigger remote deploy (pull + up)
         run: |
-          ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "cd ${EC2_APP_DIR} && docker compose pull && docker compose up -d --pull always --force-recreate"
+          aws ecr get-login-password --region us-east-1 | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "set -euo pipefail
+          docker login --username AWS --password-stdin ${ECR_REGISTRY}
+          cd ${EC2_APP_DIR}
+          docker compose pull
+          docker compose up -d --pull always --force-recreate"
