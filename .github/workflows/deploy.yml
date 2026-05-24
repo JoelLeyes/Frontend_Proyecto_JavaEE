@@ -109,7 +109,15 @@ jobs:
             fi
           done <<< "${group_ids}"
 
-          sleep 20
+          for probe in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if nc -z -w 5 "${EC2_HOST}" 22; then
+              echo "SSH port is reachable"
+              break
+            fi
+
+            echo "Waiting for SSH port to open... (${probe}/12)"
+            sleep 10
+          done
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
