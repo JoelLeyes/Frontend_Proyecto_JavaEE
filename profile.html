@@ -221,10 +221,17 @@
       const img = document.getElementById('avatar-img');
       const ini = document.getElementById('avatar-initials');
       if (fotoUrl) {
+        let retried = false;
         img.onerror = () => {
+          // Si la URL es /uploads/... (sin /api), reintenta con /api/uploads/...
+          if (!retried && fotoUrl.startsWith('/uploads/')) {
+            retried = true;
+            img.src = '/api' + fotoUrl;
+            return;
+          }
           img.style.display = 'none';
           ini.style.display  = '';
-          console.error('[NexoLab] No se pudo cargar la foto de perfil:', img.src);
+          ini.textContent = initials(name);
         };
         img.src = fotoUrl;
         img.style.display = 'block';
@@ -512,12 +519,12 @@
   </script>
 
   <!-- Footer -->
-  <footer class="text-center py-3 text-muted" style="font-size: 12px; background: #fff; border-top: 1px solid #e0e0e0;">
+  <footer class="page-footer text-center py-3 text-muted">
     <div class="container">
       <p>&copy; 2026 NexoLab. Todos los derechos reservados.</p>
       <p>
-        <a href="#" style="color: var(--primary); text-decoration: none;">Términos de uso</a> |
-        <a href="#" style="color: var(--primary); text-decoration: none;">Política de privacidad</a>
+        <a href="#">Términos de uso</a> |
+        <a href="#">Política de privacidad</a>
       </p>
     </div>
   </footer>

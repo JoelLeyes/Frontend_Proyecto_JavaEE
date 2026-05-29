@@ -213,9 +213,22 @@
       : (user.name || 'Usuario');
     const navEl = document.getElementById('nav-initials');
     if (user.fotoPerfilUrl) {
-      navEl.innerHTML = `<img src="${user.fotoPerfilUrl}" alt="${initials(userName)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
-      navEl.style.background = 'transparent';
-      navEl.style.padding = '0';
+      const navImg = document.createElement('img');
+      navImg.alt = initials(userName);
+      navImg.className = 'nav-avatar-img';
+      navImg.onerror = () => {
+        if (navImg.src.includes('/uploads/') && !navImg.src.includes('/api/uploads/')) {
+          navImg.src = navImg.src.replace('/uploads/', '/api/uploads/');
+          return;
+        }
+        navEl.innerHTML = '';
+        navEl.textContent = initials(userName);
+        navEl.style.cssText = '';
+      };
+      navImg.src = user.fotoPerfilUrl;
+      navEl.innerHTML = '';
+      navEl.appendChild(navImg);
+      navEl.classList.add('has-photo');
     } else {
       navEl.textContent = initials(userName);
     }
@@ -592,12 +605,12 @@
   </script>
 
   <!-- Footer -->
-  <footer class="text-center py-3 text-muted" style="font-size: 12px; background: #fff; border-top: 1px solid #e0e0e0;">
+  <footer class="page-footer text-center py-3 text-muted">
     <div class="container">
       <p>&copy; 2026 NexoLab. Todos los derechos reservados.</p>
       <p>
-        <a href="#" style="color: var(--primary); text-decoration: none;">Términos de uso</a> |
-        <a href="#" style="color: var(--primary); text-decoration: none;">Política de privacidad</a>
+        <a href="#">Términos de uso</a> |
+        <a href="#">Política de privacidad</a>
       </p>
     </div>
   </footer>
