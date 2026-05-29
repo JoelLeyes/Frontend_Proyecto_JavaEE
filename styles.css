@@ -596,6 +596,7 @@ body.login-page { min-height: 100vh; display: flex; margin: 0; padding: 0; }
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; font-weight: 800; color: #fff;
   margin-bottom: 28px;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,.2);
 }
@@ -632,6 +633,7 @@ body.login-page { min-height: 100vh; display: flex; margin: 0; padding: 0; }
   display: flex; align-items: center; justify-content: center;
   font-size: 17px;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
@@ -649,6 +651,7 @@ body.login-page { min-height: 100vh; display: flex; margin: 0; padding: 0; }
   padding: 6px 16px;
   color: rgba(255,255,255,.8);
   font-size: 12px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
@@ -1489,7 +1492,7 @@ body.land-page { overflow-x: hidden; }
 .land-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; padding: 14px 6%;
-  background: rgba(240,244,249,.88); backdrop-filter: blur(14px);
+  background: rgba(240,244,249,.88); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(24,95,165,.1);
 }
 .land-nav .brand {
