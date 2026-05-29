@@ -1850,3 +1850,36 @@ body.register-page {
 /* Avatar con foto — navbar de conversations */
 .user-initials.has-photo { background: transparent; padding: 0; }
 .nav-avatar-img { width: 34px; height: 34px; object-fit: cover; border-radius: 50%; display: block; }
+
+/* Nav icon links */
+.nav-icon-link { color: #B5D4F4 !important; }
+
+/* Conversations — empty state */
+.conv-empty-icon { font-size: 48px; color: #ddd; }
+
+/* Modal search — hint / loading / empty labels */
+.modal-hint-text { font-size: 13px; }
+
+/* Modal search results containers */
+.modal-results    { max-height: 300px; overflow-y: auto; }
+.modal-results-sm { max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
+
+/* Chips hint */
+.chips-hint-text { font-size: 12px; padding: 4px 2px; }
+
+/* Skeleton line width variants */
+.sk-40 { width: 40%; }
+.sk-45 { width: 45%; }
+.sk-50 { width: 50%; }
+.sk-55 { width: 55%; }
+.sk-60 { width: 60%; }
+.sk-65 { width: 65%; }
+.sk-70 { width: 70%; }
+.sk-72 { width: 72%; }
+.sk-80 { width: 80%; }
+.sk-85 { width: 85%; }
+.sk-time { width: 30px; height: 10px; }
+
+/* User result cards — name and sub */
+.result-name { font-size: 14px; }
+.result-sub  { font-size: 12px; }

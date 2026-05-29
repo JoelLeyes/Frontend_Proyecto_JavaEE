@@ -17,10 +17,10 @@
     <div class="ms-auto d-flex align-items-center gap-2">
       <div class="user-initials" id="nav-initials">AG</div>
       <button type="button" class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
-      <a href="profile.html" class="btn btn-sm btn-link p-0" style="color:#B5D4F4">
+      <a href="profile.html" class="btn btn-sm btn-link p-0 nav-icon-link">
         <i class="bi bi-person-circle fs-5"></i>
       </a>
-      <button type="button" class="btn btn-sm btn-link p-0" onclick="logout()" style="color:#B5D4F4" title="Cerrar sesión">
+      <button type="button" class="btn btn-sm btn-link p-0 nav-icon-link" onclick="logout()" title="Cerrar sesión">
         <i class="bi bi-box-arrow-right fs-5"></i>
       </button>
     </div>
@@ -48,13 +48,13 @@
     <!-- Tabs -->
     <ul class="nav nav-tabs mb-3" id="conv-tabs">
       <li class="nav-item">
-        <button class="nav-link active px-4" onclick="filterTab('all', this)">Todos</button>
+        <button type="button" class="nav-link active px-4" onclick="filterTab('all', this)">Todos</button>
       </li>
       <li class="nav-item">
-        <button class="nav-link px-4" onclick="filterTab('group', this)">Grupos</button>
+        <button type="button" class="nav-link px-4" onclick="filterTab('group', this)">Grupos</button>
       </li>
       <li class="nav-item">
-        <button class="nav-link px-4" onclick="filterTab('private', this)">Directos</button>
+        <button type="button" class="nav-link px-4" onclick="filterTab('private', this)">Directos</button>
       </li>
     </ul>
 
@@ -65,16 +65,16 @@
 
     <!-- Skeleton loading -->
     <div id="loading" class="d-flex flex-column gap-2">
-      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:55%"></div><div class="skeleton skeleton-line" style="width:80%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
-      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:70%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
-      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:65%"></div><div class="skeleton skeleton-line" style="width:85%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
-      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:60%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
-      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line" style="width:72%"></div><div class="skeleton skeleton-line" style="width:50%"></div></div><div class="skeleton skeleton-line" style="width:30px;height:10px"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line sk-55"></div><div class="skeleton skeleton-line sk-80"></div></div><div class="skeleton skeleton-line sk-time"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line sk-40"></div><div class="skeleton skeleton-line sk-70"></div></div><div class="skeleton skeleton-line sk-time"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line sk-65"></div><div class="skeleton skeleton-line sk-85"></div></div><div class="skeleton skeleton-line sk-time"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line sk-45"></div><div class="skeleton skeleton-line sk-60"></div></div><div class="skeleton skeleton-line sk-time"></div></div>
+      <div class="skeleton-conv-card"><div class="skeleton skeleton-avatar"></div><div class="flex-grow-1 d-flex flex-column gap-2"><div class="skeleton skeleton-line sk-72"></div><div class="skeleton skeleton-line sk-50"></div></div><div class="skeleton skeleton-line sk-time"></div></div>
     </div>
 
     <!-- Vacío -->
     <div id="empty" class="text-center py-5 d-none">
-      <i class="bi bi-chat-dots" style="font-size:48px;color:#ddd"></i>
+      <i class="bi bi-chat-dots conv-empty-icon"></i>
       <p class="text-muted mt-2">Sin conversaciones aún</p>
     </div>
   </div>
@@ -84,14 +84,14 @@
     <div class="fab-menu" id="fab-menu">
       <div class="fab-option" onclick="openNuevoGrupo()">
         <span class="fab-option-label">Nuevo grupo</span>
-        <button class="fab-option-btn"><i class="bi bi-people-fill"></i></button>
+        <button type="button" class="fab-option-btn" aria-label="Nuevo grupo"><i class="bi bi-people-fill"></i></button>
       </div>
       <div class="fab-option" onclick="openNuevoChat()">
         <span class="fab-option-label">Chat privado</span>
-        <button class="fab-option-btn"><i class="bi bi-person-fill"></i></button>
+        <button type="button" class="fab-option-btn" aria-label="Chat privado"><i class="bi bi-person-fill"></i></button>
       </div>
     </div>
-    <button class="fab" id="fab-main" onclick="toggleFabMenu()">
+    <button type="button" class="fab" id="fab-main" onclick="toggleFabMenu()" aria-label="Nuevo chat">
       <i class="bi bi-plus" id="fab-icon"></i>
     </button>
   </div>
@@ -101,21 +101,21 @@
     <div class="modal-box">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-semibold mb-0"><i class="bi bi-chat-plus me-2"></i>Nueva conversación</h6>
-        <button class="btn btn-sm btn-light" onclick="closeNuevoChat()"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="btn btn-sm btn-light" onclick="closeNuevoChat()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="search-wrap mb-3">
         <i class="bi bi-search"></i>
-        <input class="search-input" style="width:100%" id="nc-search"
+        <input class="search-input w-100" id="nc-search"
                placeholder="Buscar por nombre o email..." oninput="buscarUsuarios()"/>
       </div>
-      <div id="nc-loading" class="text-center py-3 text-muted d-none" style="font-size:13px">
+      <div id="nc-loading" class="text-center py-3 text-muted d-none modal-hint-text">
         <div class="spinner-border spinner-border-sm me-1"></div>Buscando...
       </div>
-      <div id="nc-results" class="d-flex flex-column gap-1" style="max-height:300px;overflow-y:auto"></div>
-      <div id="nc-empty" class="text-center py-3 text-muted d-none" style="font-size:13px">
+      <div id="nc-results" class="d-flex flex-column gap-1 modal-results"></div>
+      <div id="nc-empty" class="text-center py-3 text-muted d-none modal-hint-text">
         <i class="bi bi-person-x d-block mb-1 fs-4"></i>No se encontraron usuarios
       </div>
-      <div id="nc-hint" class="text-center py-3 text-muted" style="font-size:13px">
+      <div id="nc-hint" class="text-center py-3 text-muted modal-hint-text">
         Escribí al menos 2 caracteres para buscar
       </div>
     </div>
@@ -126,7 +126,7 @@
     <div class="modal-box">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-semibold mb-0"><i class="bi bi-people me-2"></i>Nuevo grupo</h6>
-        <button class="btn btn-sm btn-light" onclick="closeNuevoGrupo()"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="btn btn-sm btn-light" onclick="closeNuevoGrupo()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <div class="step-indicator">
@@ -139,7 +139,7 @@
         <label class="form-label">Nombre del grupo</label>
         <input type="text" class="form-control mb-3" id="ng-nombre" placeholder="Ej: Equipo Desarrollo"
                maxlength="60" oninput="validateNgStep1()"/>
-        <button class="btn btn-primary-custom" id="ng-next-btn" onclick="ngNextStep()" disabled>
+        <button type="button" class="btn btn-primary-custom" id="ng-next-btn" onclick="ngNextStep()" disabled>
           Siguiente <i class="bi bi-arrow-right ms-1"></i>
         </button>
       </div>
@@ -147,21 +147,21 @@
       <!-- Paso 2: agregar miembros -->
       <div id="ng-step2" class="d-none">
         <div class="chips-container" id="ng-chips">
-          <span class="text-muted" style="font-size:12px;padding:4px 2px" id="ng-chips-hint">Ningún miembro agregado aún</span>
+          <span class="text-muted chips-hint-text" id="ng-chips-hint">Ningún miembro agregado aún</span>
         </div>
         <div class="search-wrap mb-2">
           <i class="bi bi-search"></i>
-          <input class="search-input" style="width:100%" id="ng-search"
+          <input class="search-input w-100" id="ng-search"
                  placeholder="Buscar miembros..." oninput="buscarMiembros()"/>
         </div>
-        <div id="ng-loading" class="text-center py-2 text-muted d-none" style="font-size:13px">
+        <div id="ng-loading" class="text-center py-2 text-muted d-none modal-hint-text">
           <div class="spinner-border spinner-border-sm me-1"></div>Buscando...
         </div>
-        <div id="ng-results" class="d-flex flex-column gap-1" style="max-height:220px;overflow-y:auto;margin-bottom:12px"></div>
-        <div id="ng-empty" class="text-center py-2 text-muted d-none" style="font-size:13px">
+        <div id="ng-results" class="d-flex flex-column gap-1 modal-results-sm"></div>
+        <div id="ng-empty" class="text-center py-2 text-muted d-none modal-hint-text">
           <i class="bi bi-person-x d-block mb-1 fs-4"></i>No se encontraron usuarios
         </div>
-        <button class="btn btn-primary-custom" onclick="crearGrupo()">
+        <button type="button" class="btn btn-primary-custom" onclick="crearGrupo()">
           <i class="bi bi-check-lg me-1"></i>Crear grupo
         </button>
       </div>
@@ -395,8 +395,8 @@
           <div class="user-result-card" onclick="iniciarChat(${u.idUsuario}, '${nombre.replace(/'/g, "\\'")}')">
             <div class="avatar-sm">${ini}</div>
             <div>
-              <div class="fw-medium" style="font-size:14px">${nombre}</div>
-              <div class="text-muted" style="font-size:12px">${sub}</div>
+              <div class="result-name fw-medium">${nombre}</div>
+              <div class="result-sub text-muted">${sub}</div>
             </div>
           </div>`;
       }).join('');
@@ -492,7 +492,7 @@
       container.innerHTML = ngMiembros.map(m => `
         <span class="member-chip">
           ${m.nombre}
-          <button onclick="removeMiembro(${m.idUsuario})">&times;</button>
+          <button type="button" onclick="removeMiembro(${m.idUsuario})" aria-label="Quitar ${m.nombre}">&times;</button>
         </span>`).join('') + hint.outerHTML;
       container.querySelector('#ng-chips-hint').style.display = 'none';
     }
@@ -557,8 +557,8 @@
           <div class="user-result-card" onclick="addMiembro(${u.idUsuario}, '${nombre.replace(/'/g, "\\'")}')">
             <div class="avatar-sm">${ini}</div>
             <div>
-              <div class="fw-medium" style="font-size:14px">${nombre}</div>
-              <div class="text-muted" style="font-size:12px">${u.email || ''}</div>
+              <div class="result-name fw-medium">${nombre}</div>
+              <div class="result-sub text-muted">${u.email || ''}</div>
             </div>
             <i class="bi bi-plus-circle ms-auto text-primary"></i>
           </div>`;
