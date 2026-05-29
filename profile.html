@@ -289,12 +289,11 @@
         });
         const data = await res.json();
         if (res.ok) {
-          console.log('[NexoLab] fotoPerfilUrl recibida del servidor:', data.fotoPerfilUrl);
           user = { ...user, fotoPerfilUrl: data.fotoPerfilUrl };
           localStorage.setItem('current_user', JSON.stringify(user));
           renderAvatar(user.fotoPerfilUrl, (user.nombre || '') + ' ' + (user.apellido || ''));
           msgEl.style.color = '#86EFAC';
-          msgEl.textContent = '✓ Foto actualizada — URL: ' + data.fotoPerfilUrl;
+          msgEl.textContent = '✓ Foto actualizada';
           setTimeout(() => { msgEl.textContent = ''; }, 3000);
         } else {
           msgEl.style.color = '#FCA5A5';
