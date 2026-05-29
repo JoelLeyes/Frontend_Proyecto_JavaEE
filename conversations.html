@@ -202,7 +202,14 @@
     const userName = (user.nombre || user.apellido)
       ? ((user.nombre || '') + ' ' + (user.apellido || '')).trim()
       : (user.name || 'Usuario');
-    document.getElementById('nav-initials').textContent = initials(userName);
+    const navEl = document.getElementById('nav-initials');
+    if (user.fotoPerfilUrl) {
+      navEl.innerHTML = `<img src="${user.fotoPerfilUrl}" alt="${initials(userName)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+      navEl.style.background = 'transparent';
+      navEl.style.padding = '0';
+    } else {
+      navEl.textContent = initials(userName);
+    }
 
     async function loadConversations() {
       try {
