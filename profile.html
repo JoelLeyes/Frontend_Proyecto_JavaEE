@@ -21,7 +21,10 @@
   <!-- Header con avatar -->
   <div class="profile-header">
     <div class="profile-avatar-wrap" id="avatar-wrap" onclick="triggerPhotoUpload()" title="Cambiar foto de perfil">
-      <div class="profile-avatar" id="profile-avatar">AG</div>
+      <div class="profile-avatar" id="profile-avatar">
+        <img id="avatar-img" alt=""/>
+        <span id="avatar-initials">AG</span>
+      </div>
       <div class="photo-overlay" id="photo-overlay"><i class="bi bi-camera-fill"></i></div>
     </div>
     <input type="file" id="foto-input" accept="image/jpeg,image/jpg,image/png,image/gif" style="display:none" onchange="subirFoto(this)"/>
@@ -215,11 +218,17 @@
     }
 
     function renderAvatar(fotoUrl, name) {
-      const el = document.getElementById('profile-avatar');
+      const img = document.getElementById('avatar-img');
+      const ini = document.getElementById('avatar-initials');
       if (fotoUrl) {
-        el.innerHTML = `<img src="${fotoUrl}" alt="${initials(name)}"/>`;
+        img.src = fotoUrl;
+        img.style.display = 'block';
+        ini.style.display = 'none';
       } else {
-        el.textContent = initials(name);
+        img.src = '';
+        img.style.display = 'none';
+        ini.style.display = '';
+        ini.textContent = initials(name);
       }
     }
 
