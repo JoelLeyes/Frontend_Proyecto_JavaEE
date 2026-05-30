@@ -508,11 +508,37 @@
       }
     }
 
+    function markDesconectado() {
+      const t = localStorage.getItem('jwt_token');
+      if (!t) return;
+      fetch('/api/usuarios/me/estado', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+        body: JSON.stringify({ tipoEstado: 'DESCONECTADO' }),
+        keepalive: true
+      });
+    }
+
+    function restoreEstado() {
+      const t = localStorage.getItem('jwt_token');
+      const u = JSON.parse(localStorage.getItem('current_user') || 'null');
+      if (!t || !u || !u.tipoEstado || u.tipoEstado === 'DESCONECTADO') return;
+      fetch('/api/usuarios/me/estado', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+        body: JSON.stringify({ tipoEstado: u.tipoEstado }),
+        keepalive: true
+      });
+    }
+
+    window.addEventListener('beforeunload', markDesconectado);
+
     const logoutModal = new bootstrap.Modal(document.getElementById('logout-modal'));
     function logout()        { logoutModal.show(); }
-    function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+    function confirmLogout() { markDesconectado(); localStorage.clear(); window.location.href = 'login.html'; }
 
     initThemeToggle('theme-toggle');
+    restoreEstado();
     renderProfile();
     loadEstado();
   </script>

@@ -336,6 +336,9 @@ body {
 .btn-admin-primary        { background: var(--primary); color: #fff; border: none; }
 .btn-admin-primary:hover  { background: var(--primary-dark); color: #fff; }
 .modal-box-wide           { max-width: 620px; }
+.mensajes-cantidad-input  { width: 80px; }
+.mensajes-list-scroll     { max-height: 400px; overflow-y: auto; }
+.mensajes-label-text      { font-size: 14px; }
 
 /* Tarjetas de mensajes en panel admin */
 .msg-admin-card {
@@ -1849,7 +1852,8 @@ body.register-page {
 
 /* Avatar con foto — navbar de conversations */
 .user-initials.has-photo { background: transparent; padding: 0; }
-.nav-avatar-img { width: 34px; height: 34px; object-fit: cover; border-radius: 50%; display: block; }
+.nav-avatar-img  { width: 34px; height: 34px; object-fit: cover; border-radius: 50%; display: block; }
+.nav-avatar-link { display: flex; align-items: center; text-decoration: none; cursor: pointer; }
 
 /* Nav icon links */
 .nav-icon-link { color: #B5D4F4 !important; }

@@ -15,11 +15,10 @@
   <nav class="navbar navbar-expand px-3 py-2">
     <span class="navbar-brand">NexoLab</span>
     <div class="ms-auto d-flex align-items-center gap-2">
-      <div class="user-initials" id="nav-initials">AG</div>
-      <button type="button" class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
-      <a href="profile.html" class="btn btn-sm btn-link p-0 nav-icon-link">
-        <i class="bi bi-person-circle fs-5"></i>
+      <a href="profile.html" class="nav-avatar-link" title="Mi perfil" aria-label="Mi perfil">
+        <div class="user-initials" id="nav-initials">AG</div>
       </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
       <button type="button" class="btn btn-sm btn-link p-0 nav-icon-link" onclick="logout()" title="Cerrar sesión">
         <i class="bi bi-box-arrow-right fs-5"></i>
       </button>
@@ -337,12 +336,39 @@
       return d.toLocaleDateString('es', { day:'2-digit', month:'2-digit' });
     }
 
+    function markDesconectado() {
+      const t = localStorage.getItem('jwt_token');
+      if (!t) return;
+      fetch('/api/usuarios/me/estado', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+        body: JSON.stringify({ tipoEstado: 'DESCONECTADO' }),
+        keepalive: true
+      });
+    }
+
+    function restoreEstado() {
+      const t = localStorage.getItem('jwt_token');
+      const u = JSON.parse(localStorage.getItem('current_user') || 'null');
+      if (!t || !u || !u.tipoEstado || u.tipoEstado === 'DESCONECTADO') return;
+      fetch('/api/usuarios/me/estado', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+        body: JSON.stringify({ tipoEstado: u.tipoEstado }),
+        keepalive: true
+      });
+    }
+
+    window.addEventListener('beforeunload', markDesconectado);
+
     function logout() {
+      markDesconectado();
       localStorage.clear();
       window.location.href = 'login.html';
     }
 
     initThemeToggle('theme-toggle');
+    restoreEstado();
     loadConversations();
     setInterval(loadConversations, 5000);
 

@@ -19,8 +19,8 @@
   </div>
   <div class="d-flex align-items-center gap-3">
     <span id="admin-name" class="admin-username"></span>
-    <button class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
-    <button class="btn btn-sm admin-exit-btn" onclick="logout()">
+    <button type="button" class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
+    <button type="button" class="btn btn-sm admin-exit-btn" onclick="logout()">
       <i class="bi bi-box-arrow-right me-1"></i>Salir
     </button>
   </div>
@@ -34,7 +34,7 @@
       <h5 class="fw-bold mb-1">Panel de Administración</h5>
       <p class="text-muted admin-subtitle mb-0">Gestión de usuarios de NexoLab</p>
     </div>
-    <button class="btn btn-sm btn-outline-secondary" onclick="openPasswordModal()">
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openPasswordModal()">
       <i class="bi bi-key me-1"></i>Cambiar contraseña
     </button>
   </div>
@@ -76,7 +76,7 @@
       <div class="fw-semibold table-title">Usuarios</div>
       <div class="search-wrap">
         <i class="bi bi-search"></i>
-        <input class="search-input" id="search-input" placeholder="Buscar usuario..." oninput="filterTable()"/>
+        <input class="search-input" id="search-input" placeholder="Buscar usuario..." aria-label="Buscar usuario" oninput="filterTable()"/>
       </div>
     </div>
 
@@ -88,12 +88,12 @@
       <table class="table table-hover mb-0 admin-table">
         <thead class="table-thead">
           <tr>
-            <th class="ps-4 table-col-header">Usuario</th>
-            <th class="table-col-header">Cargo</th>
-            <th class="table-col-header">Sector</th>
-            <th class="table-col-header">Estado</th>
-            <th class="table-col-header">Registro</th>
-            <th></th>
+            <th scope="col" class="ps-4 table-col-header">Usuario</th>
+            <th scope="col" class="table-col-header">Cargo</th>
+            <th scope="col" class="table-col-header">Sector</th>
+            <th scope="col" class="table-col-header">Estado</th>
+            <th scope="col" class="table-col-header">Registro</th>
+            <th scope="col" aria-label="Acciones"></th>
           </tr>
         </thead>
         <tbody id="user-table-body"></tbody>
@@ -111,15 +111,15 @@
   <div class="modal-box">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h6 class="fw-semibold mb-0"><i class="bi bi-key me-2"></i>Cambiar contraseña</h6>
-      <button class="btn btn-sm btn-light" onclick="closePasswordModal()"><i class="bi bi-x-lg"></i></button>
+      <button type="button" class="btn btn-sm btn-light" onclick="closePasswordModal()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
     </div>
     <div id="pwd-alert" class="alert py-2 d-none"></div>
     <div class="mb-3">
-      <label class="form-label">Contraseña actual</label>
+      <label class="form-label" for="pwd-actual">Contraseña actual</label>
       <input type="password" class="form-control" id="pwd-actual" placeholder="••••••••"/>
     </div>
     <div class="mb-3">
-      <label class="form-label">Nueva contraseña</label>
+      <label class="form-label" for="pwd-nueva">Nueva contraseña</label>
       <input type="password" class="form-control" id="pwd-nueva" placeholder="••••••••" oninput="checkPwdReqs()"/>
       <div class="mt-2 d-flex flex-column gap-1">
         <div class="req-item" id="pr-len"><i class="bi bi-circle"></i> Mínimo 8 caracteres</div>
@@ -129,12 +129,12 @@
       </div>
     </div>
     <div class="mb-4">
-      <label class="form-label">Confirmar nueva contraseña</label>
+      <label class="form-label" for="pwd-confirmar">Confirmar nueva contraseña</label>
       <input type="password" class="form-control" id="pwd-confirmar" placeholder="••••••••"/>
     </div>
     <div class="d-flex gap-2 justify-content-end">
-      <button class="btn btn-outline-secondary btn-sm" onclick="closePasswordModal()">Cancelar</button>
-      <button class="btn btn-sm btn-admin-primary" onclick="cambiarPassword()">
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="closePasswordModal()">Cancelar</button>
+      <button type="button" class="btn btn-sm btn-admin-primary" onclick="cambiarPassword()">
         <span id="pwd-spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>Guardar
       </button>
     </div>
@@ -146,15 +146,15 @@
   <div class="modal-box modal-box-wide">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h6 class="fw-semibold mb-0"><i class="bi bi-chat-text me-2"></i>Mensajes de <span id="mensajes-user-name"></span></h6>
-      <button class="btn btn-sm btn-light" onclick="closeMensajesModal()"><i class="bi bi-x-lg"></i></button>
+      <button type="button" class="btn btn-sm btn-light" onclick="closeMensajesModal()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
     </div>
 
-    <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded" style="background:#f8f9fa">
-      <label class="form-label mb-0 fw-medium" style="white-space:nowrap">Últimos</label>
-      <input type="number" class="form-control form-control-sm" id="mensajes-cantidad"
-             value="10" min="1" max="100" style="width:80px"/>
-      <label class="form-label mb-0 fw-medium" style="white-space:nowrap">mensajes</label>
-      <button class="btn btn-sm btn-admin-primary ms-auto" onclick="cargarMensajes()">
+    <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded bg-light">
+      <label class="form-label mb-0 fw-medium text-nowrap" for="mensajes-cantidad">Últimos</label>
+      <input type="number" class="form-control form-control-sm mensajes-cantidad-input" id="mensajes-cantidad"
+             value="10" min="1" max="100" aria-label="Cantidad de mensajes"/>
+      <span class="fw-medium text-nowrap mensajes-label-text">mensajes</span>
+      <button type="button" class="btn btn-sm btn-admin-primary ms-auto" onclick="cargarMensajes()">
         <span id="mensajes-spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>
         <i class="bi bi-arrow-clockwise me-1"></i>Cargar
       </button>
@@ -166,7 +166,7 @@
     <div id="mensajes-empty" class="text-center py-4 text-muted d-none admin-subtitle">
       <i class="bi bi-chat-slash fs-3 d-block mb-2"></i>Este usuario no tiene mensajes enviados
     </div>
-    <div id="mensajes-list" class="d-flex flex-column gap-2" style="max-height:400px;overflow-y:auto"></div>
+    <div id="mensajes-list" class="d-flex flex-column gap-2 mensajes-list-scroll"></div>
   </div>
 </div>
 
@@ -175,15 +175,15 @@
   <div class="modal-box">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h6 class="fw-semibold mb-0">Editar usuario</h6>
-      <button class="btn btn-sm btn-light" onclick="closeEditModal()"><i class="bi bi-x-lg"></i></button>
+      <button type="button" class="btn btn-sm btn-light" onclick="closeEditModal()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
     </div>
     <div id="edit-alert" class="alert alert-danger py-2 d-none"></div>
     <div class="mb-3">
-      <label class="form-label">Cargo</label>
+      <label class="form-label" for="edit-cargo">Cargo</label>
       <input type="text" class="form-control" id="edit-cargo" placeholder="Ej: Desarrollador"/>
     </div>
     <div class="mb-4">
-      <label class="form-label">Sector</label>
+      <label class="form-label" for="edit-sector">Sector</label>
       <select class="form-select" id="edit-sector">
         <option value="SIN_ASIGNAR">Sin asignar</option>
         <option value="SISTEMAS">Sistemas</option>
@@ -193,8 +193,8 @@
       </select>
     </div>
     <div class="d-flex gap-2 justify-content-end">
-      <button class="btn btn-outline-secondary btn-sm" onclick="closeEditModal()">Cancelar</button>
-      <button class="btn btn-sm btn-admin-primary" onclick="saveUser()">
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="closeEditModal()">Cancelar</button>
+      <button type="button" class="btn btn-sm btn-admin-primary" onclick="saveUser()">
         <span id="save-spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>Guardar
       </button>
     </div>
@@ -285,10 +285,10 @@ function renderTable(lista) {
         <td class="td-mid date-cell">${fecha}</td>
         <td class="td-actions">
           <div class="d-flex gap-1 justify-content-end">
-            <button class="btn btn-sm btn-light btn-edit" onclick="openEditModal(${u.idUsuario})">
+            <button type="button" class="btn btn-sm btn-light btn-edit" onclick="openEditModal(${u.idUsuario})">
               <i class="bi bi-pencil me-1"></i>Editar
             </button>
-            <button class="btn btn-sm btn-light btn-edit" onclick="openMensajesModal(${u.idUsuario})">
+            <button type="button" class="btn btn-sm btn-light btn-edit" onclick="openMensajesModal(${u.idUsuario})">
               <i class="bi bi-chat-text me-1"></i>Mensajes
             </button>
           </div>
@@ -514,7 +514,21 @@ async function cambiarPassword() {
 }
 
 // ── Logout ─────────────────────────────────────────────────
+function markDesconectado() {
+  const t = localStorage.getItem('jwt_token');
+  if (!t) return;
+  fetch('/api/usuarios/me/estado', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+    body: JSON.stringify({ tipoEstado: 'DESCONECTADO' }),
+    keepalive: true
+  });
+}
+
+window.addEventListener('beforeunload', markDesconectado);
+
 function logout() {
+  markDesconectado();
   localStorage.removeItem('jwt_token');
   localStorage.removeItem('current_user');
   window.location.href = 'login.html';
