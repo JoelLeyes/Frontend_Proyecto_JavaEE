@@ -118,6 +118,31 @@
     </button>
   </div>
 
+  <!-- Ventana flotante de Chat con IA -->
+  <div id="aiChatContainer" class="ai-chat-container">
+      <div class="ai-chat-header">
+          <h5>🤖 Asistente IA</h5>
+          <button class="ai-close-btn" onclick="toggleAIChat()" title="Cerrar">×</button>
+      </div>
+      <div class="ai-chat-messages" id="aiChatMessages"></div>
+      <div class="ai-chat-input-area">
+          <input
+                  type="text"
+                  id="aiChatInput"
+                  placeholder="Pregunta algo..."
+                  onkeypress="if(event.key==='Enter') sendAIQuery()"
+          >
+          <button onclick="sendAIQuery()" class="ai-send-btn">
+              <i class="bi bi-send"></i>
+          </button>
+      </div>
+  </div>
+
+  <!-- Boton para abrir Chat de IA -->
+  <button id="aiFloatingBtn" class="ai-floating-btn" onclick="toggleAIChat()" title="Abrir Asistente IA">
+      🤖
+  </button>
+
    <!-- Barra de entrada de mensajes -->
    <div class="input-bar" style="position:relative">
      <!-- Contenedor de vista previa de archivos (arriba) -->
@@ -1177,6 +1202,78 @@
     loadUserStatus();
     setInterval(pollMessages, 3000);
     if (!isGroup) setInterval(loadUserStatus, 10000);
+
+    // AI Chat Functions
+    function toggleAIChat() {
+        const container = document.getElementById('aiChatContainer');
+        const btn = document.getElementById('aiFloatingBtn');
+
+        container.classList.toggle('active');
+        btn.style.display = container.classList.contains('active') ? 'none' : 'block';
+    }
+
+    async function sendAIQuery() {
+        const input = document.getElementById('aiChatInput');
+        const consulta = input.value.trim();
+
+        if (!consulta) return;
+
+        // Mostrar mensaje del usuario
+        agregarMensajeAlChat('user', consulta);
+        input.value = '';
+
+        // Mostrar indicador de carga
+        const messagesDiv = document.getElementById('aiChatMessages');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'ai-message bot';
+        loadingDiv.innerHTML = '<div class="ai-loading"><span></span><span></span><span></span></div>';
+        messagesDiv.appendChild(loadingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+        try {
+            // Obtener token del localStorage
+            const token = localStorage.getItem('token');
+
+            // Llamar al backend
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ consulta: consulta })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                agregarMensajeAlChat('bot', data.respuesta);
+            } else {
+                agregarMensajeAlChat('bot', 'Lo siento, no puedo procesar tu consulta. Por favor intenta más tarde.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            agregarMensajeAlChat('bot', 'Error de conexión. Por favor intenta más tarde.');
+        } finally {
+            // Remover indicador de carga
+            if (loadingDiv.parentNode) {
+                loadingDiv.remove();
+            }
+        }
+    }
+
+    function agregarMensajeAlChat(tipo, contenido) {
+        const messagesDiv = document.getElementById('aiChatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'ai-message ' + tipo;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'ai-message-bubble';
+        bubble.textContent = contenido;
+
+        messageDiv.appendChild(bubble);
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
   </script>
 
   <!-- Footer -->
