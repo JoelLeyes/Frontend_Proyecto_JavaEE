@@ -1,7 +1,16 @@
-// Aplica el tema guardado antes de que el DOM renderice (evita flash)
+// Aplica el tema guardado — funciona tanto en <head> como en <body>
 (function () {
-  if (localStorage.getItem('nexolab_theme') === 'dark') {
-    document.body.classList.add('dark');
+  function applyTheme() {
+    if (document.body && localStorage.getItem('nexolab_theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+  }
+  // Si el body ya existe (script en <body>) aplica de inmediato
+  if (document.body) {
+    applyTheme();
+  } else {
+    // Script en <head>: esperar al DOM
+    document.addEventListener('DOMContentLoaded', applyTheme);
   }
 })();
 

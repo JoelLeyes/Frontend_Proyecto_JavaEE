@@ -1246,13 +1246,26 @@
 
             if (response.ok) {
                 const data = await response.json();
-                agregarMensajeAlChat('bot', data.respuesta);
+                agregarMensajeAlChat('bot', data.respuesta || data.response || data.message || JSON.stringify(data));
             } else {
-                agregarMensajeAlChat('bot', 'Lo siento, no puedo procesar tu consulta. Por favor intenta más tarde.');
+                console.error('AI backend error, status:', response.status);
+                let errMsg = 'El asistente no está disponible en este momento.';
+                try {
+                    const errData = await response.json();
+                    if (errData.message) errMsg = errData.message;
+                } catch (_) {}
+                if (response.status === 401 || response.status === 403) {
+                    errMsg = 'No tienes permisos para usar el asistente. Por favor iniciá sesión nuevamente.';
+                } else if (response.status === 404) {
+                    errMsg = 'El servicio de IA no está configurado en el servidor.';
+                } else if (response.status >= 500) {
+                    errMsg = 'Error interno del servidor. Por favor intentá más tarde.';
+                }
+                agregarMensajeAlChat('bot', errMsg);
             }
         } catch (error) {
-            console.error('Error:', error);
-            agregarMensajeAlChat('bot', 'Error de conexión. Por favor intenta más tarde.');
+            console.error('AI fetch error:', error);
+            agregarMensajeAlChat('bot', 'No se pudo conectar con el servidor. Verificá tu conexión e intentá de nuevo.');
         } finally {
             // Remover indicador de carga
             if (loadingDiv.parentNode) {
