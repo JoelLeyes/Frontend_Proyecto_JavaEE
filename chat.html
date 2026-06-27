@@ -118,31 +118,6 @@
     </button>
   </div>
 
-  <!-- Ventana flotante de Chat con IA -->
-  <div id="aiChatContainer" class="ai-chat-container">
-      <div class="ai-chat-header">
-          <h5>🤖 Asistente IA</h5>
-          <button class="ai-close-btn" onclick="toggleAIChat()" title="Cerrar">×</button>
-      </div>
-      <div class="ai-chat-messages" id="aiChatMessages"></div>
-      <div class="ai-chat-input-area">
-          <input
-                  type="text"
-                  id="aiChatInput"
-                  placeholder="Pregunta algo..."
-                  onkeypress="if(event.key==='Enter') sendAIQuery()"
-          >
-          <button onclick="sendAIQuery()" class="ai-send-btn">
-              <i class="bi bi-send"></i>
-          </button>
-      </div>
-  </div>
-
-  <!-- Boton para abrir Chat de IA -->
-  <button id="aiFloatingBtn" class="ai-floating-btn" onclick="toggleAIChat()" title="Abrir Asistente IA">
-      🤖
-  </button>
-
    <!-- Barra de entrada de mensajes -->
    <div class="input-bar" style="position:relative">
      <!-- Contenedor de vista previa de archivos (arriba) -->
@@ -1203,90 +1178,7 @@
     setInterval(pollMessages, 3000);
     if (!isGroup) setInterval(loadUserStatus, 10000);
 
-    // AI Chat Functions
-    function toggleAIChat() {
-        const container = document.getElementById('aiChatContainer');
-        const btn = document.getElementById('aiFloatingBtn');
 
-        container.classList.toggle('active');
-        btn.style.display = container.classList.contains('active') ? 'none' : 'block';
-    }
-
-    async function sendAIQuery() {
-        const input = document.getElementById('aiChatInput');
-        const consulta = input.value.trim();
-
-        if (!consulta) return;
-
-        // Mostrar mensaje del usuario
-        agregarMensajeAlChat('user', consulta);
-        input.value = '';
-
-        // Mostrar indicador de carga
-        const messagesDiv = document.getElementById('aiChatMessages');
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'ai-message bot';
-        loadingDiv.innerHTML = '<div class="ai-loading"><span></span><span></span><span></span></div>';
-        messagesDiv.appendChild(loadingDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-        try {
-            // Obtener token del localStorage
-            const token = localStorage.getItem('jwt_token');
-
-            // Llamar al backend
-            const response = await fetch('/api/ai/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ consulta: consulta })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                agregarMensajeAlChat('bot', data.respuesta || data.response || data.message || JSON.stringify(data));
-            } else {
-                console.error('AI backend error, status:', response.status);
-                let errMsg = 'El asistente no está disponible en este momento.';
-                try {
-                    const errData = await response.json();
-                    if (errData.message) errMsg = errData.message;
-                } catch (_) {}
-                if (response.status === 401 || response.status === 403) {
-                    errMsg = 'No tienes permisos para usar el asistente. Por favor iniciá sesión nuevamente.';
-                } else if (response.status === 404) {
-                    errMsg = 'El servicio de IA no está configurado en el servidor.';
-                } else if (response.status >= 500) {
-                    errMsg = 'Error interno del servidor. Por favor intentá más tarde.';
-                }
-                agregarMensajeAlChat('bot', errMsg);
-            }
-        } catch (error) {
-            console.error('AI fetch error:', error);
-            agregarMensajeAlChat('bot', 'No se pudo conectar con el servidor. Verificá tu conexión e intentá de nuevo.');
-        } finally {
-            // Remover indicador de carga
-            if (loadingDiv.parentNode) {
-                loadingDiv.remove();
-            }
-        }
-    }
-
-    function agregarMensajeAlChat(tipo, contenido) {
-        const messagesDiv = document.getElementById('aiChatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'ai-message ' + tipo;
-
-        const bubble = document.createElement('div');
-        bubble.className = 'ai-message-bubble';
-        bubble.textContent = contenido;
-
-        messageDiv.appendChild(bubble);
-        messagesDiv.appendChild(messageDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
   </script>
 
   <!-- Footer -->
