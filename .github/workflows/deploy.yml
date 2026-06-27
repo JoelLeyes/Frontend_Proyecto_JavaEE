@@ -11,6 +11,15 @@ env:
   EC2_HOST: 44.210.180.79
   EC2_USER: ec2-user
   EC2_APP_DIR: /home/ec2-user/app
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  SMTP_HOST: ${{ secrets.SMTP_HOST }}
+  SMTP_PORT: ${{ secrets.SMTP_PORT }}
+  SMTP_USER: ${{ secrets.SMTP_USER }}
+  SMTP_PASS: ${{ secrets.SMTP_PASS }}
+  SMTP_FROM: ${{ secrets.SMTP_FROM }}
+  UPLOAD_DIR: ${{ secrets.UPLOAD_DIR }}
+  FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
@@ -216,6 +225,61 @@ jobs:
 
       - name: Trigger remote deploy (pull + up)
         run: |
+          required=(JWT_SECRET SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_FROM UPLOAD_DIR GEMINI_API_KEY)
+          for k in "${required[@]}"; do
+            if [ -z "${!k:-}" ]; then
+              echo "${k} is empty. Add it as a GitHub Actions secret before deploying."
+              exit 1
+            fi
+          done
+
+          jwt_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['JWT_SECRET']))
+          PY
+          )"
+          smtp_host_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['SMTP_HOST']))
+          PY
+          )"
+          smtp_port_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['SMTP_PORT']))
+          PY
+          )"
+          smtp_user_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['SMTP_USER']))
+          PY
+          )"
+          smtp_pass_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['SMTP_PASS']))
+          PY
+          )"
+          smtp_from_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['SMTP_FROM']))
+          PY
+          )"
+          upload_dir_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['UPLOAD_DIR']))
+          PY
+          )"
+          gemini_api_key_q="$(python3 - <<'PY'
+          import os, shlex
+          print(shlex.quote(os.environ['GEMINI_API_KEY']))
+          PY
+          )"
+          fcm_json_q="$(python3 - <<'PY'
+          import os, shlex
+          v = os.environ.get('FCM_SERVICE_ACCOUNT_JSON', '')
+          print(shlex.quote(v) if v else "''")
+          PY
+          )"
+
           for attempt in 1 2 3 4 5; do
             # Subimos el compose template (sin secretos) para asegurar que exista y esté actualizado.
             # Nota: la configuración TLS/nginx.conf y certs se mantiene en la EC2 (no se sobreescribe aquí).
@@ -236,6 +300,20 @@ jobs:
             docker compose version
             docker login --username AWS --password-stdin ${ECR_REGISTRY}
             cd ${EC2_APP_DIR}
+            rm -f .env || true
+
+            export JWT_SECRET=${jwt_q}
+            export SMTP_HOST=${smtp_host_q}
+            export SMTP_PORT=${smtp_port_q}
+            export SMTP_USER=${smtp_user_q}
+            export SMTP_PASS=${smtp_pass_q}
+            export SMTP_FROM=${smtp_from_q}
+            export UPLOAD_DIR=${upload_dir_q}
+            export GEMINI_API_KEY=${gemini_api_key_q}
+            export FCM_SERVICE_ACCOUNT_JSON=${fcm_json_q}
+            export SMTP_STARTTLS=true
+            mkdir -p "${UPLOAD_DIR}" || true
+
             sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose pull frontend
             sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose up -d --pull always --force-recreate frontend
             sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose ps"; then
