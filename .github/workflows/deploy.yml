@@ -162,6 +162,10 @@ jobs:
             exit 1
           fi
 
+          echo "Esperando status checks (puede tardar ~90s)..."
+          aws ec2 wait instance-status-ok --instance-ids "${instance_id}"
+          echo "Instancia lista para recibir conexiones."
+
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -178,6 +182,67 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Refresh EC2 Security Group before remote deploy
+        run: |
+          set -euo pipefail
+          runner_ip="$(curl -s https://checkip.amazonaws.com | tr -d '\r\n')"
+          cidr="${runner_ip}/32"
+          echo "Runner IP before SSH: ${cidr}"
+
+          instance_json="$(aws ec2 describe-instances --filters "Name=ip-address,Values=${EC2_HOST}" --query 'Reservations[].Instances[].{InstanceId:InstanceId,SecurityGroups:SecurityGroups[].{GroupId:GroupId,GroupName:GroupName}}' --output json)"
+          if [ "${instance_json}" = "[]" ] || [ -z "${instance_json}" ]; then
+            echo "No encontré la EC2 con IP pública ${EC2_HOST}"
+            exit 1
+          fi
+
+          group_ids="$(INSTANCE_JSON="${instance_json}" python3 - <<'PY'
+          import json, os
+          data = json.loads(os.environ["INSTANCE_JSON"])
+          data = data[0] if isinstance(data, list) and data else data
+          print("\n".join([sg["GroupId"] for sg in data.get("SecurityGroups", [])]))
+          PY
+          )"
+
+          if [ -z "${group_ids}" ]; then
+            echo "La instancia no tiene Security Groups"
+            exit 1
+          fi
+
+          while IFS= read -r sg_id; do
+            [ -z "${sg_id}" ] && continue
+            echo "Reforzando SG: ${sg_id}"
+
+            perm_json="$(CIDR="${cidr}" python3 - <<'PY'
+          import json, os
+          cidr = os.environ["CIDR"]
+          print(json.dumps([
+              {
+                  "IpProtocol": "tcp",
+                  "FromPort": 22,
+                  "ToPort": 22,
+                  "IpRanges": [
+                      {"CidrIp": cidr, "Description": "AUTO-SSH GitHub Actions"}
+                  ],
+              }
+          ]))
+          PY
+            )"
+
+            if out="$(aws ec2 authorize-security-group-ingress --group-id "${sg_id}" --ip-permissions "${perm_json}" 2>&1)"; then
+              echo "Regla SSH autorizada/refrescada en ${sg_id} para ${cidr}"
+            else
+              rc=$?
+              if echo "${out}" | grep -q "InvalidPermission.Duplicate"; then
+                echo "La regla ya existía en ${sg_id} para ${cidr}"
+              else
+                echo "${out}"
+                exit "${rc}"
+              fi
+            fi
+          done <<< "${group_ids}"
+
+          sleep 20
 
       - name: Write EC2 private key
         env:
