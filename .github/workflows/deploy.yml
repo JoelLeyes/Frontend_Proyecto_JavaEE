@@ -225,14 +225,6 @@ jobs:
 
       - name: Trigger remote deploy (pull + up)
         run: |
-          required=(JWT_SECRET SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_FROM UPLOAD_DIR GEMINI_API_KEY)
-          for k in "${required[@]}"; do
-            if [ -z "${!k:-}" ]; then
-              echo "${k} is empty. Add it as a GitHub Actions secret before deploying."
-              exit 1
-            fi
-          done
-
           jwt_q="$(python3 - <<'PY'
           import os, shlex
           print(shlex.quote(os.environ['JWT_SECRET']))
