@@ -273,13 +273,12 @@ jobs:
           )"
 
           for attempt in 1 2 3 4 5; do
-            # Subimos el compose template (sin secretos) para asegurar que exista y esté actualizado.
-            # Nota: la configuración TLS/nginx.conf y certs se mantiene en la EC2 (no se sobreescribe aquí).
             if ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "set -euo pipefail
-            mkdir -p ${EC2_APP_DIR}
-            test -d ${EC2_APP_DIR}/deploy || true"; then
+            mkdir -p ${EC2_APP_DIR}/deploy"; then
               scp -i key.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 ./deploy/docker-compose.ec2.yml ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/tmp/docker-compose.yml
-              ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo install -m 0644 /tmp/docker-compose.yml ${EC2_APP_DIR}/docker-compose.yml"
+              scp -i key.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 ./deploy/nginx.conf ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/tmp/nginx.conf
+              ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=20 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo install -m 0644 /tmp/docker-compose.yml ${EC2_APP_DIR}/docker-compose.yml
+              sudo install -m 0644 /tmp/nginx.conf ${EC2_APP_DIR}/deploy/nginx.conf"
             fi
 
             if aws ecr get-login-password --region us-east-1 | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "set -euo pipefail
@@ -306,8 +305,8 @@ jobs:
             export SMTP_STARTTLS=true
             mkdir -p "${UPLOAD_DIR}" || true
 
-            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose pull frontend
-            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose up -d --pull always --force-recreate frontend
+            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose pull frontend nginx
+            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose up -d --pull always --force-recreate frontend nginx
             sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose ps"; then
               exit 0
             fi
