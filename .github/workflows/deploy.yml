@@ -236,9 +236,9 @@ jobs:
             docker compose version
             docker login --username AWS --password-stdin ${ECR_REGISTRY}
             cd ${EC2_APP_DIR}
-            sudo env DOCKER_CONFIG="$HOME/.docker" docker compose pull frontend
-            sudo env DOCKER_CONFIG="$HOME/.docker" docker compose up -d --pull always --force-recreate frontend
-            sudo env DOCKER_CONFIG="$HOME/.docker" docker compose ps"; then
+            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose pull frontend
+            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose up -d --pull always --force-recreate frontend
+            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose ps"; then
               exit 0
             fi
 
