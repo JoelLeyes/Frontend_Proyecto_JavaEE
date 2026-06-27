@@ -8,7 +8,7 @@ on:
 env:
   ECR_REGISTRY: 058264217545.dkr.ecr.us-east-1.amazonaws.com
   IMAGE_NAME: proyecto/frontend
-  EC2_HOST: 44.195.111.17
+  EC2_HOST: 44.210.180.79
   EC2_USER: ec2-user
   EC2_APP_DIR: /home/ec2-user/app
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -35,6 +35,8 @@ jobs:
           runner_ip="$(curl -s https://checkip.amazonaws.com | tr -d '\r\n')"
           cidr="${runner_ip}/32"
           echo "Runner IP: ${cidr}"
+          echo "RUNNER_IP=${runner_ip}" >> "$GITHUB_ENV"
+          echo "RUNNER_CIDR=${cidr}" >> "$GITHUB_ENV"
 
           instance_json="$(aws ec2 describe-instances --filters "Name=ip-address,Values=${EC2_HOST}" --query 'Reservations[].Instances[].{InstanceId:InstanceId,SecurityGroups:SecurityGroups[].{GroupId:GroupId,GroupName:GroupName}}' --output json)"
           if [ "${instance_json}" = "[]" ] || [ -z "${instance_json}" ]; then
@@ -109,15 +111,60 @@ jobs:
             fi
           done <<< "${group_ids}"
 
-          for probe in 1 2 3 4 5 6 7 8 9 10 11 12; do
+          sleep 20
+
+      - name: Ensure EC2 instance is running
+        run: |
+          set -euo pipefail
+          instance_id="$(aws ec2 describe-instances \
+            --filters "Name=ip-address,Values=${EC2_HOST}" \
+            --query 'Reservations[0].Instances[0].InstanceId' \
+            --output text)"
+
+          if [ -z "${instance_id}" ] || [ "${instance_id}" = "None" ]; then
+            echo "No se encontró ninguna instancia EC2 con IP ${EC2_HOST}"
+            exit 1
+          fi
+
+          echo "EC2_INSTANCE_ID=${instance_id}" >> "$GITHUB_ENV"
+
+          state="$(aws ec2 describe-instances \
+            --instance-ids "${instance_id}" \
+            --query 'Reservations[0].Instances[0].State.Name' \
+            --output text)"
+          echo "Instancia ${instance_id} — estado actual: ${state}"
+
+          if [ "${state}" = "stopped" ]; then
+            echo "La instancia está detenida. Iniciando..."
+            aws ec2 start-instances --instance-ids "${instance_id}"
+            aws ec2 wait instance-running --instance-ids "${instance_id}"
+            echo "Instancia en running. Esperando status checks (puede tardar ~90s)..."
+            aws ec2 wait instance-status-ok --instance-ids "${instance_id}"
+            echo "Instancia lista para recibir conexiones."
+          elif [ "${state}" = "running" ]; then
+            echo "La instancia ya está en running."
+          else
+            echo "Estado inesperado: ${state}. Abortando."
+            exit 1
+          fi
+
+      - name: Wait for SSH port 22
+        run: |
+          set -euo pipefail
+          echo "Probando conectividad TCP a ${EC2_HOST}:22 (runner: ${RUNNER_CIDR:-unknown})"
+          for probe in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24; do
             if nc -z -w 5 "${EC2_HOST}" 22; then
               echo "SSH port is reachable"
-              break
+              exit 0
             fi
 
-            echo "Waiting for SSH port to open... (${probe}/12)"
+            echo "Waiting for SSH port to open... (${probe}/24)"
             sleep 10
           done
+
+          echo "ERROR: No se pudo alcanzar ${EC2_HOST}:22 desde el runner."
+          echo "Sugerencias: revisar NACL/route table, firewall del host (sshd/iptables), y que el Security Group tenga inbound 22 para ${RUNNER_CIDR:-unknown}."
+          exit 1
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
