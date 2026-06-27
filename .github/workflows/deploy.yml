@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: nexolab-prod-deploy
+  cancel-in-progress: false
+
 env:
   ECR_REGISTRY: 614560290350.dkr.ecr.us-east-1.amazonaws.com
   IMAGE_NAME: proyecto/frontend
@@ -18,6 +22,7 @@ env:
   SMTP_PASS: ${{ secrets.SMTP_PASS }}
   SMTP_FROM: ${{ secrets.SMTP_FROM }}
   UPLOAD_DIR: ${{ secrets.UPLOAD_DIR }}
+  ATLAS_MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
   FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -274,7 +279,7 @@ jobs:
 
           for attempt in 1 2 3 4 5; do
             if ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "set -euo pipefail
-            mkdir -p ${EC2_APP_DIR}/deploy"; then
+            sudo mkdir -p ${EC2_APP_DIR}/deploy"; then
               scp -i key.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 ./deploy/docker-compose.ec2.yml ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/tmp/docker-compose.yml
               scp -i key.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 ./deploy/nginx.conf ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/tmp/nginx.conf
               ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=20 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo install -m 0644 /tmp/docker-compose.yml ${EC2_APP_DIR}/docker-compose.yml
@@ -290,6 +295,7 @@ jobs:
             fi
             docker compose version
             docker login --username AWS --password-stdin ${ECR_REGISTRY}
+            sudo mkdir -p ${EC2_APP_DIR}
             cd ${EC2_APP_DIR}
             rm -f .env || true
 
@@ -303,11 +309,11 @@ jobs:
             export GEMINI_API_KEY=${gemini_api_key_q}
             export FCM_SERVICE_ACCOUNT_JSON=${fcm_json_q}
             export SMTP_STARTTLS=true
-            mkdir -p "${UPLOAD_DIR}" || true
+            sudo docker rm -f nexolab-nginx >/dev/null 2>&1 || true
 
-            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose pull frontend nginx
-            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose up -d --pull always --force-recreate frontend nginx
-            sudo env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose ps"; then
+            sudo --preserve-env=JWT_SECRET,SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS,SMTP_FROM,UPLOAD_DIR,ATLAS_MONGODB_URI,FCM_SERVICE_ACCOUNT_JSON,GEMINI_API_KEY,SMTP_STARTTLS env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose pull frontend nginx
+            sudo --preserve-env=JWT_SECRET,SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS,SMTP_FROM,UPLOAD_DIR,ATLAS_MONGODB_URI,FCM_SERVICE_ACCOUNT_JSON,GEMINI_API_KEY,SMTP_STARTTLS env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose up -d --pull always --force-recreate frontend nginx
+            sudo --preserve-env=JWT_SECRET,SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS,SMTP_FROM,UPLOAD_DIR,ATLAS_MONGODB_URI,FCM_SERVICE_ACCOUNT_JSON,GEMINI_API_KEY,SMTP_STARTTLS env DOCKER_CONFIG="/home/ec2-user/.docker" docker compose ps"; then
               exit 0
             fi
 
