@@ -12,16 +12,16 @@
 <body class="chat-page">
 
   <!-- Navbar -->
-  <div class="chat-navbar" style="position:relative">
+  <div class="chat-navbar">
     <a href="conversations.html" class="back-btn"><i class="bi bi-arrow-left"></i></a>
     <div class="chat-avatar" id="nav-avatar">DS</div>
     <div style="flex:1;min-width:0">
       <div class="chat-title" id="nav-title">Desarrollo de Software</div>
       <div class="chat-sub d-flex align-items-center gap-1" id="nav-sub"></div>
     </div>
-    <button class="btn btn-link p-0" style="color:var(--primary-light)" onclick="toggleSearch()"><i class="bi bi-search"></i></button>
-    <button class="theme-toggle" id="theme-toggle" title="Modo oscuro"></button>
-    <button class="chat-menu-btn" id="chat-menu-btn" onclick="toggleChatMenu(event)"><i class="bi bi-three-dots-vertical"></i></button>
+    <button type="button" class="btn btn-link p-0 chat-search-toggle-btn" onclick="toggleSearch()" aria-label="Buscar en el chat"><i class="bi bi-search"></i></button>
+    <button type="button" class="theme-toggle" id="theme-toggle" title="Modo oscuro" aria-label="Cambiar tema"></button>
+    <button type="button" class="chat-menu-btn" id="chat-menu-btn" onclick="toggleChatMenu(event)" aria-label="Opciones del chat"><i class="bi bi-three-dots-vertical"></i></button>
 
     <!-- Dropdown menu (group only) -->
     <div class="chat-dropdown" id="chat-dropdown">
@@ -46,9 +46,9 @@
     <input class="chat-search-input" id="chat-search-input" type="text"
            placeholder="Buscar en el chat..." oninput="onSearchInput()"/>
     <span class="search-nav-count" id="search-nav-count"></span>
-    <button class="search-nav-btn" id="search-prev" onclick="navigateSearch(-1)" disabled title="Anterior"><i class="bi bi-chevron-up"></i></button>
-    <button class="search-nav-btn" id="search-next" onclick="navigateSearch(1)"  disabled title="Siguiente"><i class="bi bi-chevron-down"></i></button>
-    <button class="search-nav-btn" onclick="closeSearch()" title="Cerrar"><i class="bi bi-x-lg"></i></button>
+    <button type="button" class="search-nav-btn" id="search-prev" onclick="navigateSearch(-1)" disabled title="Anterior" aria-label="Resultado anterior"><i class="bi bi-chevron-up"></i></button>
+    <button type="button" class="search-nav-btn" id="search-next" onclick="navigateSearch(1)"  disabled title="Siguiente" aria-label="Resultado siguiente"><i class="bi bi-chevron-down"></i></button>
+    <button type="button" class="search-nav-btn" onclick="closeSearch()" title="Cerrar" aria-label="Cerrar búsqueda"><i class="bi bi-x-lg"></i></button>
   </div>
 
   <!-- Banner modo demo -->
@@ -73,34 +73,34 @@
 
   <!-- Emoji picker -->
   <div class="emoji-picker" id="emoji-picker">
-    <button class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
-    <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
-    <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
-    <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-    <button class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
-    <button class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
-    <button class="emoji-btn" onclick="insertEmoji('😅')">😅</button>
-    <button class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
-    <button class="emoji-btn" onclick="insertEmoji('👀')">👀</button>
-    <button class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
-    <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
-    <button class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
-    <button class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
-    <button class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
-    <button class="emoji-btn" onclick="insertEmoji('⚡')">⚡</button>
-    <button class="emoji-btn" onclick="insertEmoji('📌')">📌</button>
-    <button class="emoji-btn" onclick="insertEmoji('📎')">📎</button>
-    <button class="emoji-btn" onclick="insertEmoji('🗓️')">🗓️</button>
-    <button class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
-    <button class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
-    <button class="emoji-btn" onclick="insertEmoji('✍️')">✍️</button>
-    <button class="emoji-btn" onclick="insertEmoji('🤝')">🤝</button>
-    <button class="emoji-btn" onclick="insertEmoji('👋')">👋</button>
-    <button class="emoji-btn" onclick="insertEmoji('😬')">😬</button>
-    <button class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
-    <button class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
-    <button class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
-    <button class="emoji-btn" onclick="insertEmoji('😤')">😤</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😅')">😅</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('👀')">👀</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('⚡')">⚡</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('📌')">📌</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('📎')">📎</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🗓️')">🗓️</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('✍️')">✍️</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🤝')">🤝</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('👋')">👋</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😬')">😬</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
+    <button type="button" class="emoji-btn" onclick="insertEmoji('😤')">😤</button>
   </div>
 
    <!-- Input file oculto para seleccionar archivos - MÚLTIPLES -->
@@ -113,7 +113,7 @@
   <div class="reply-bar d-none" id="reply-bar">
     <i class="bi bi-reply-fill"></i>
     <span class="reply-bar-content" id="reply-bar-text"></span>
-    <button class="reply-bar-close" onclick="cancelReply()" title="Cancelar respuesta">
+    <button type="button" class="reply-bar-close" onclick="cancelReply()" title="Cancelar respuesta" aria-label="Cancelar respuesta">
       <i class="bi bi-x-lg"></i>
     </button>
   </div>
@@ -123,15 +123,15 @@
      <!-- Contenedor de vista previa de archivos (arriba) -->
      <div id="files-preview-container" class="files-preview-container"></div>
 
-     <button class="attach-btn" title="Adjuntar archivo" onclick="abrirSelectorArchivo()">
+     <button type="button" class="attach-btn" title="Adjuntar archivo" aria-label="Adjuntar archivo" onclick="abrirSelectorArchivo()">
        <i class="bi bi-paperclip"></i>
      </button>
-     <button class="attach-btn" title="Emojis" onclick="toggleEmojiPicker(event)">
+     <button type="button" class="attach-btn" title="Emojis" aria-label="Emojis" onclick="toggleEmojiPicker(event)">
        <i class="bi bi-emoji-smile"></i>
      </button>
      <textarea class="msg-input" id="msg-input" placeholder="Escribe un mensaje..."
-               rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); sendTypingEvent()"></textarea>
-     <button class="send-btn" onclick="sendMessage()" id="send-btn">
+               rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); sendTypingEvent()" aria-label="Escribe un mensaje"></textarea>
+     <button type="button" class="send-btn" onclick="sendMessage()" id="send-btn" aria-label="Enviar mensaje">
        <i class="bi bi-send-fill"></i>
      </button>
    </div>
@@ -141,7 +141,7 @@
     <div class="participants-sheet">
       <div class="participants-sheet-header">
         <span class="fw-semibold" id="participants-title">Participantes</span>
-        <button class="btn btn-sm btn-light" onclick="closeParticipants()"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="btn btn-sm btn-light" onclick="closeParticipants()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="participants-sheet-body" id="participants-body">
         <div class="text-center py-4 text-muted" id="participants-loading">
@@ -156,11 +156,11 @@
     <div class="modal-box">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-semibold mb-0"><i class="bi bi-person-plus me-2"></i>Agregar miembro</h6>
-        <button class="btn btn-sm btn-light" onclick="closeAddMember()"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="btn btn-sm btn-light" onclick="closeAddMember()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="search-wrap mb-2">
         <i class="bi bi-search"></i>
-        <input class="search-input" style="width:100%" id="am-search"
+        <input class="search-input w-100" id="am-search"
                placeholder="Buscar por nombre..." oninput="buscarParaAgregar()"/>
       </div>
       <div id="am-loading" class="text-center py-2 text-muted d-none" style="font-size:13px">
@@ -181,13 +181,13 @@
     <div class="modal-box" style="max-width:380px">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-semibold mb-0"><i class="bi bi-pencil me-2"></i>Renombrar grupo</h6>
-        <button class="btn btn-sm btn-light" onclick="closeRenameGroup()"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="btn btn-sm btn-light" onclick="closeRenameGroup()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
       </div>
       <input type="text" class="form-control mb-3" id="rename-input" placeholder="Nuevo nombre del grupo" maxlength="60"/>
       <div id="rename-error" class="alert alert-danger py-2 d-none" style="font-size:13px"></div>
       <div class="d-flex gap-2">
-        <button class="btn btn-light flex-grow-1" onclick="closeRenameGroup()">Cancelar</button>
-        <button class="btn btn-admin-primary flex-grow-1" id="rename-btn" onclick="guardarRenombre()">Guardar</button>
+        <button type="button" class="btn btn-light flex-grow-1" onclick="closeRenameGroup()">Cancelar</button>
+        <button type="button" class="btn btn-admin-primary flex-grow-1" id="rename-btn" onclick="guardarRenombre()">Guardar</button>
       </div>
     </div>
   </div>
@@ -200,8 +200,8 @@
     <div class="modal-box confirm-box">
       <p id="confirm-msg"></p>
       <div class="d-flex gap-2">
-        <button class="btn btn-light flex-grow-1" id="confirm-no">Cancelar</button>
-        <button class="btn btn-danger flex-grow-1" id="confirm-yes">Confirmar</button>
+        <button type="button" class="btn btn-light flex-grow-1" id="confirm-no">Cancelar</button>
+        <button type="button" class="btn btn-danger flex-grow-1" id="confirm-yes">Confirmar</button>
       </div>
     </div>
   </div>
@@ -367,7 +367,7 @@
         const reacciones = msg.reacciones || [];
         const pillsHtml = reacciones.length
           ? `<div class="msg-reactions">${reacciones.map(r =>
-              `<button class="reaction-pill${r.mine ? ' mine' : ''}"
+              `<button type="button" class="reaction-pill${r.mine ? ' mine' : ''}"
                        onclick="toggleReaction(${msgId},'${r.emoji}')">${r.emoji} ${r.count}</button>`
             ).join('')}</div>`
           : '';
@@ -381,7 +381,7 @@
           <div class="msg-wrap ${mine ? 'out' : 'in'}${isCurrent ? ' search-current' : ''}" id="msg-${msgId}">
             ${sender}
             <div class="msg-bubble-row">
-              <button class="reply-btn" data-msg-id="${msgId}" title="Responder">
+              <button type="button" class="reply-btn" data-msg-id="${msgId}" title="Responder" aria-label="Responder mensaje">
                 <i class="bi bi-reply"></i>
               </button>
               <div class="bubble ${mine ? 'out' : 'in'}">
@@ -392,7 +392,7 @@
                   ${formatTime(sentAt)} ${ticks}
                 </div>
               </div>
-              <button class="reaction-trigger" onclick="showReactionPicker(event,${msgId})">😊</button>
+              <button type="button" class="reaction-trigger" onclick="showReactionPicker(event,${msgId})" aria-label="Agregar reacción">😊</button>
             </div>
             ${pillsHtml}
           </div>`;
@@ -781,8 +781,8 @@
               ? '<span class="participant-role-badge">Admin</span>' : '';
             const isMe = String(p.idUsuario) === currentUserId;
             const kickBtn = isAdminOfGroup && !isMe
-              ? `<button class="btn btn-sm ms-auto" style="color:#dc3545;padding:2px 6px"
-                   title="Expulsar" onclick="kickParticipant(${p.idUsuario},'${nombre.replace(/'/g,"\\'")}')">
+              ? `<button type="button" class="btn btn-sm btn-kick ms-auto"
+                   title="Expulsar" aria-label="Expulsar participante" onclick="kickParticipant(${p.idUsuario},'${nombre.replace(/'/g,"\\'")}')">
                    <i class="bi bi-person-x-fill"></i>
                  </button>` : '';
             return `
@@ -994,7 +994,7 @@
       reactionPickerEl = document.createElement('div');
       reactionPickerEl.className = 'reaction-picker';
       reactionPickerEl.innerHTML = REACTION_EMOJIS.map(em =>
-        `<button onclick="toggleReaction(${msgId},'${em}')">${em}</button>`
+        `<button type="button" onclick="toggleReaction(${msgId},'${em}')" aria-label="${em}">${em}</button>`
       ).join('');
       document.body.appendChild(reactionPickerEl);
       const rect = e.currentTarget.getBoundingClientRect();
@@ -1041,7 +1041,7 @@
       if (!reacciones.length) { if (el) el.remove(); return; }
       if (!el) { el = document.createElement('div'); el.className = 'msg-reactions'; wrap.appendChild(el); }
       el.innerHTML = reacciones.map(r =>
-        `<button class="reaction-pill${r.mine ? ' mine' : ''}"
+        `<button type="button" class="reaction-pill${r.mine ? ' mine' : ''}"
                  onclick="toggleReaction(${msgId},'${r.emoji}')">${r.emoji} ${r.count}</button>`
       ).join('');
     }

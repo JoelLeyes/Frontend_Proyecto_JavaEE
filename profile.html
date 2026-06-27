@@ -33,30 +33,40 @@
     <div id="foto-msg" style="font-size:12px;margin-top:6px;min-height:18px"></div>
   </div>
 
-  <div class="container" style="max-width:560px;padding:16px">
+  <div class="profile-content">
+
+    <!-- Foto de perfil -->
+    <div class="section-card">
+      <div class="profile-row" onclick="triggerPhotoUpload()">
+        <div class="row-icon" style="background:#E6F1FB;color:#185FA5"><i class="bi bi-camera"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Cambiar foto de perfil</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Información -->
     <div class="section-card">
       <div class="section-label">Información</div>
       <div class="profile-row">
         <div class="row-icon" style="background:#E6F1FB;color:#185FA5"><i class="bi bi-envelope"></i></div>
-        <div>
-          <div class="row-label" id="profile-email">alvaro@empresa.com</div>
+        <div class="flex-grow-1 overflow-hidden">
+          <div class="row-label text-truncate" id="profile-email">—</div>
           <div class="row-value">Correo electrónico</div>
         </div>
       </div>
       <div class="profile-row">
-        <div class="row-icon" style="background:#EEEDFE;color:#3C3489"><i class="bi bi-building"></i></div>
-        <div>
-          <div class="row-label" id="profile-sector">—</div>
-          <div class="row-value">Sector</div>
+        <div class="row-icon" style="background:#E1F5EE;color:#085041"><i class="bi bi-person-badge"></i></div>
+        <div class="flex-grow-1 overflow-hidden">
+          <div class="row-label text-truncate" id="profile-role-row">—</div>
+          <div class="row-value">Cargo</div>
         </div>
       </div>
       <div class="profile-row">
-        <div class="row-icon" style="background:#E1F5EE;color:#085041"><i class="bi bi-person-badge"></i></div>
-        <div>
-          <div class="row-label" id="profile-role-row">—</div>
-          <div class="row-value">Cargo</div>
+        <div class="row-icon" style="background:#EEEDFE;color:#3C3489"><i class="bi bi-building"></i></div>
+        <div class="flex-grow-1 overflow-hidden">
+          <div class="row-label text-truncate" id="profile-sector">—</div>
+          <div class="row-value">Sector</div>
         </div>
       </div>
     </div>
@@ -93,15 +103,34 @@
       </div>
     </div>
 
+    <!-- Más opciones -->
+    <div class="section-card">
+      <div class="section-label">Más</div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#F0F9FF;color:#185FA5"><i class="bi bi-bell"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Notificaciones</div>
+          <div class="row-value">Configuración básica en desarrollo</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <div class="row-icon" style="background:#F0F9FF;color:#185FA5"><i class="bi bi-shield"></i></div>
+        <div class="flex-grow-1">
+          <div class="row-label">Privacidad</div>
+          <div class="row-value">Configuración básica en desarrollo</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Cerrar sesión -->
     <div class="section-card">
-      <div class="profile-row row-danger" onclick="logout()">
+      <div class="profile-row row-danger" onclick="confirmLogout()">
         <div class="row-icon"><i class="bi bi-box-arrow-right"></i></div>
         <div class="row-label">Cerrar sesión</div>
       </div>
     </div>
 
-    <p class="text-center text-muted mt-3" style="font-size:11px">NexoLab v1.0.0</p>
+    <p class="text-center text-muted mt-3 mb-4" style="font-size:11px">NexoLab v1.0.0</p>
   </div>
 
   <!-- Modal cambiar contraseña -->
