@@ -201,7 +201,8 @@ jobs:
             if ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "set -euo pipefail
             mkdir -p ${EC2_APP_DIR}
             test -d ${EC2_APP_DIR}/deploy || true"; then
-              scp -i key.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 ./deploy/docker-compose.ec2.yml ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:${{ env.EC2_APP_DIR }}/docker-compose.yml
+              scp -i key.pem -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 ./deploy/docker-compose.ec2.yml ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/tmp/docker-compose.yml
+              ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo install -m 0644 /tmp/docker-compose.yml ${EC2_APP_DIR}/docker-compose.yml"
             fi
 
             if aws ecr get-login-password --region us-east-1 | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -i key.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "set -euo pipefail
