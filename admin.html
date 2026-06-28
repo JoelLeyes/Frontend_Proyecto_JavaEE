@@ -513,22 +513,7 @@ async function cambiarPassword() {
   }
 }
 
-// ── Logout ─────────────────────────────────────────────────
-function markDesconectado() {
-  const t = localStorage.getItem('jwt_token');
-  if (!t) return;
-  fetch('/api/usuarios/me/estado', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
-    body: JSON.stringify({ tipoEstado: 'DESCONECTADO' }),
-    keepalive: true
-  });
-}
-
-window.addEventListener('beforeunload', markDesconectado);
-
 function logout() {
-  markDesconectado();
   localStorage.removeItem('jwt_token');
   localStorage.removeItem('current_user');
   window.location.href = 'login.html';

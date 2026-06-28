@@ -336,17 +336,6 @@
       return d.toLocaleDateString('es', { day:'2-digit', month:'2-digit' });
     }
 
-    function markDesconectado() {
-      const t = localStorage.getItem('jwt_token');
-      if (!t) return;
-      fetch('/api/usuarios/me/estado', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
-        body: JSON.stringify({ tipoEstado: 'DESCONECTADO' }),
-        keepalive: true
-      });
-    }
-
     function restoreEstado() {
       const t = localStorage.getItem('jwt_token');
       const u = JSON.parse(localStorage.getItem('current_user') || 'null');
@@ -359,10 +348,7 @@
       });
     }
 
-    window.addEventListener('beforeunload', markDesconectado);
-
     function logout() {
-      markDesconectado();
       localStorage.clear();
       window.location.href = 'login.html';
     }
