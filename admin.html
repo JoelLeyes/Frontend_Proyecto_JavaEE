@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<!-- Navbar -  ->
+<!-- Navbar -->
 <nav class="admin-navbar">
   <div class="brand">
     <div class="logo-box logo-box-sm"><span>NL</span></div>
@@ -204,7 +204,13 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const token = localStorage.getItem('jwt_token');
-const user  = JSON.parse(localStorage.getItem('current_user') || '{}');
+let user = {};
+
+try {
+  user = JSON.parse(localStorage.getItem('current_user') || '{}') || {};
+} catch {
+  user = {};
+}
 
 const role = String((user && (user.rolSistema ?? user.rol_sistema ?? user.role)) ?? '').trim().toUpperCase();
 
@@ -212,8 +218,14 @@ if (!token || (role !== 'ADMIN_SISTEMA' && role !== 'ADMIN')) {
   window.location.href = 'login.html';
 }
 
-document.getElementById('admin-name').textContent = user.nombre + ' ' + user.apellido;
-initThemeToggle('theme-toggle');
+const adminNameEl = document.getElementById('admin-name');
+if (adminNameEl) {
+  adminNameEl.textContent = [user.nombre, user.apellido].filter(Boolean).join(' ') || 'Administrador';
+}
+
+if (typeof initThemeToggle === 'function') {
+  initThemeToggle('theme-toggle');
+}
 
 let allUsuarios = [];
 let editingId   = null;
@@ -224,24 +236,56 @@ const SECTOR_LABELS = {
 };
 
 // ── Carga inicial ──────────────────────────────────────────
-Promise.all([
-  fetch('/api/admin/stats',    { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()).catch(() => null),
-  fetch('/api/admin/usuarios', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()).catch(() => [])
-]).then(([stats, usuarios]) => {
-  if (stats) {
-    document.getElementById('stat-total').textContent = stats.totalUsuarios ?? '—';
-    const sectoresActivos = stats.usuariosPorSector
+loadDashboard();
+
+async function loadDashboard() {
+  try {
+    const [statsResult, usuariosResult] = await Promise.allSettled([
+      fetch('/api/admin/stats', { headers: { Authorization: 'Bearer ' + token } }),
+      fetch('/api/admin/usuarios', { headers: { Authorization: 'Bearer ' + token } }),
+    ]);
+
+    const statsResponse = statsResult.status === 'fulfilled' ? statsResult.value : null;
+    const usuariosResponse = usuariosResult.status === 'fulfilled' ? usuariosResult.value : null;
+
+    const stats = statsResponse && statsResponse.ok ? await statsResponse.json().catch(() => null) : null;
+    const usuarios = usuariosResponse && usuariosResponse.ok ? await usuariosResponse.json().catch(() => []) : [];
+
+    allUsuarios = Array.isArray(usuarios) ? usuarios : [];
+
+    const usuariosRegulares = allUsuarios.filter(u =>
+      String((u && (u.rolSistema ?? u.rol_sistema ?? u.role)) ?? 'USUARIO').trim().toUpperCase() === 'USUARIO'
+    );
+
+    const totalUsuarios = stats && typeof stats.totalUsuarios !== 'undefined'
+      ? stats.totalUsuarios
+      : usuariosRegulares.length;
+    document.getElementById('stat-total').textContent = totalUsuarios;
+
+    const sectoresActivos = stats && stats.usuariosPorSector
       ? Object.values(stats.usuariosPorSector).filter(n => n > 0).length
-      : '—';
+      : new Set(usuariosRegulares.map(u => u.sector || 'SIN_ASIGNAR')).size;
     document.getElementById('stat-sectores').textContent = sectoresActivos;
+
+    const conectados = allUsuarios.filter(u =>
+      u.tipoEstado === 'DISPONIBLE' || u.tipoEstado === 'OCUPADO' || u.tipoEstado === 'EN_REUNION'
+    ).length;
+    document.getElementById('stat-conectados').textContent = conectados;
+
+    renderTable(allUsuarios);
+  } catch (error) {
+    console.error('No se pudo cargar el panel de administración', error);
+    document.getElementById('stat-total').textContent = '—';
+    document.getElementById('stat-sectores').textContent = '—';
+    document.getElementById('stat-conectados').textContent = '—';
+    renderTable([]);
+    const emptyEl = document.getElementById('table-empty');
+    if (emptyEl) {
+      emptyEl.innerHTML = '<i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>No se pudo cargar el panel';
+      emptyEl.classList.remove('d-none');
+    }
   }
-  allUsuarios = Array.isArray(usuarios) ? usuarios : [];
-  const conectados = allUsuarios.filter(u =>
-    u.tipoEstado === 'DISPONIBLE' || u.tipoEstado === 'OCUPADO' || u.tipoEstado === 'EN_REUNION'
-  ).length;
-  document.getElementById('stat-conectados').textContent = conectados;
-  renderTable(allUsuarios);
-});
+}
 
 // ── Render tabla ───────────────────────────────────────────
 function renderTable(lista) {
