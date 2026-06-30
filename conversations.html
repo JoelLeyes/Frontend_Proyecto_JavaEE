@@ -25,10 +25,10 @@
     </div>
   </nav>
 
-  <!-- Banner modo demo -->
-  <div class="demo-banner d-none" id="demo-banner">
-    <i class="bi bi-exclamation-triangle-fill"></i>
-    <span><strong>Modo demo</strong> — el servidor no está disponible. Mostrando datos de ejemplo.</span>
+  <!-- Banner de error -->
+  <div class="alert alert-danger d-none mb-0 rounded-0 border-0" id="server-banner" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>Error 404</strong> — el servidor no está disponible.
   </div>
 
   <div class="main-layout">
@@ -178,18 +178,23 @@
       setTimeout(() => el.remove(), 2900);
     }
 
-    // Datos demo para desarrollar sin backend
-    const DEMO_CONVS = [
-      { idChat:'1', nombreChat:'Desarrollo de Software', tipoChat:'GROUP',   ultimoMensaje:'Maria: subieron el build nuevo', horaUltimoMensaje:'2024-01-15T10:42:00', mensajesSinLeer:3 },
-      { idChat:'2', nombreChat:'Equipo UX',              tipoChat:'GROUP',   ultimoMensaje:'Revisen el Figma actualizado',   horaUltimoMensaje:'2024-01-15T09:15:00', mensajesSinLeer:0 },
-      { idChat:'3', nombreChat:'Gerencia General',       tipoChat:'GROUP',   ultimoMensaje:'Reunión mañana a las 9am',       horaUltimoMensaje:'2024-01-14T17:30:00', mensajesSinLeer:1 },
-      { idChat:'4', nombreChat:'Carlos Ramirez',         tipoChat:'PRIVATE', ultimoMensaje:'OK, lo reviso ahora mismo',      horaUltimoMensaje:'2024-01-14T16:00:00', mensajesSinLeer:0, online:true },
-      { idChat:'5', nombreChat:'Lucia Martinez',         tipoChat:'PRIVATE', ultimoMensaje:'Adjunto el informe mensual',     horaUltimoMensaje:'2024-01-13T11:20:00', mensajesSinLeer:1 },
-      { idChat:'6', nombreChat:'Juan Perez',             tipoChat:'PRIVATE', ultimoMensaje:'Gracias por la info',            horaUltimoMensaje:'2024-01-12T09:00:00', mensajesSinLeer:0 },
-    ];
-
     let allConvs    = [];
     let currentTab  = 'all';
+    let serverUnavailable = false;
+    const DEFAULT_EMPTY_HTML = '<i class="bi bi-chat-dots conv-empty-icon"></i><p class="text-muted mt-2">Sin conversaciones aún</p>';
+    const ERROR_EMPTY_HTML = '<i class="bi bi-exclamation-triangle-fill conv-empty-icon text-danger"></i><p class="text-muted mt-2 mb-1">Error 404</p><p class="text-muted mb-0">El servidor no está disponible.</p>';
+
+    function restoreEmptyState() {
+      document.getElementById('empty').innerHTML = DEFAULT_EMPTY_HTML;
+    }
+
+    function showServerErrorState() {
+      serverUnavailable = true;
+      document.getElementById('server-banner').classList.remove('d-none');
+      document.getElementById('empty').innerHTML = ERROR_EMPTY_HTML;
+      document.getElementById('empty').classList.remove('d-none');
+      document.getElementById('conv-list').innerHTML = '';
+    }
 
     function normalizeTipoChat(tipo) {
       const t = String(tipo || '').trim().toUpperCase();
@@ -233,6 +238,9 @@
     }
 
     async function loadConversations() {
+      serverUnavailable = false;
+      document.getElementById('server-banner').classList.add('d-none');
+      restoreEmptyState();
       try {
         const res   = await fetch('/api/chats', {
           headers: { 'Authorization': 'Bearer ' + token }
@@ -240,12 +248,12 @@
         if (res.ok) {
           allConvs = await res.json();
         } else {
-          allConvs = DEMO_CONVS;
-          document.getElementById('demo-banner').classList.remove('d-none');
+          allConvs = [];
+          showServerErrorState();
         }
       } catch {
-        allConvs = DEMO_CONVS;
-        document.getElementById('demo-banner').classList.remove('d-none');
+        allConvs = [];
+        showServerErrorState();
       }
       document.getElementById('loading').classList.add('d-none');
       renderConvs();
@@ -257,6 +265,12 @@
     }
 
     function renderConvs() {
+      if (serverUnavailable) {
+        document.getElementById('conv-list').innerHTML = '';
+        document.getElementById('empty').classList.remove('d-none');
+        return;
+      }
+
       updateTabTitle();
       const search = document.getElementById('search-input').value.toLowerCase();
       let filtered = allConvs.filter(c => {
@@ -274,6 +288,7 @@
 
       if (filtered.length === 0) {
         list.innerHTML = '';
+        restoreEmptyState();
         empty.classList.remove('d-none');
         return;
       }

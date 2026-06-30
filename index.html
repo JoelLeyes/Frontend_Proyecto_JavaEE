@@ -159,7 +159,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // ── Mockup animado ──────────────────────────────────────
-    const DEMO_MSGS = [
+    const PREVIEW_MSGS = [
       { side:'in',  name:'María G.', ini:'MG', text:'¿Subieron el build nuevo al staging?' },
       { side:'out', text:'Sí, ya está. Probalo con el endpoint /api/v2' },
       { side:'in',  name:'Carlos R.', ini:'CR', text:'Perfecto, lo reviso ahora mismo 👍' },
@@ -200,7 +200,7 @@
     }
 
     function showNext() {
-      if (msgIndex >= DEMO_MSGS.length) {
+      if (msgIndex >= PREVIEW_MSGS.length) {
         // reiniciar ciclo
         animTimeout = setTimeout(() => {
           container.innerHTML = '';
@@ -211,7 +211,7 @@
         return;
       }
 
-      const msg = DEMO_MSGS[msgIndex];
+      const msg = PREVIEW_MSGS[msgIndex];
 
       // Mostrar typing indicator antes del mensaje
       typingEl = createTyping();
