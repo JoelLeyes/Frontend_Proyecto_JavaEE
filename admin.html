@@ -235,6 +235,22 @@ const SECTOR_LABELS = {
   RRHH: 'RRHH', FINANZAS: 'Finanzas', OPERACIONES: 'Operaciones'
 };
 
+function resolvePhotoUrl(url) {
+  const value = String(url || '').trim();
+  if (!value) return '';
+  if (value.startsWith('/uploads/')) return '/api' + value;
+  if (value.startsWith('uploads/')) return '/api/' + value;
+  return value;
+}
+
+function initials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return (parts[0] || 'U').substring(0, 2).toUpperCase();
+}
+
 // ── Carga inicial ──────────────────────────────────────────
 loadDashboard();
 
@@ -302,18 +318,23 @@ function renderTable(lista) {
 
   const tbody = document.getElementById('user-table-body');
   tbody.innerHTML = lista.map(u => {
-    const ini         = ((u.nombre || ' ')[0] + (u.apellido || ' ')[0]).toUpperCase();
+    const nombreCompleto = `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.email || 'Usuario';
+    const ini         = initials(nombreCompleto);
     const sector      = u.sector || 'SIN_ASIGNAR';
     const sectorLabel = SECTOR_LABELS[sector] || sector;
     const estado      = estadoInfo(u.tipoEstado);
     const fecha       = u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleDateString('es-AR') : '—';
+    const photoUrl    = resolvePhotoUrl(u.fotoPerfilUrl || u.foto_perfil_url || '');
     return `
       <tr>
         <td class="ps-4 td-mid">
           <div class="d-flex align-items-center gap-2">
-            <div class="user-avatar-sm">${ini}</div>
+            <div class="user-avatar-sm${photoUrl ? ' has-photo' : ''}">
+              ${photoUrl ? `<img src="${photoUrl}" alt="${nombreCompleto}" class="avatar-photo-img" onerror="this.remove();this.parentElement.classList.remove('has-photo');" />` : ''}
+              <span class="avatar-fallback">${ini}</span>
+            </div>
             <div>
-              <div class="fw-medium">${u.nombre} ${u.apellido}</div>
+              <div class="fw-medium">${nombreCompleto}</div>
               <div class="user-email text-muted">${u.email}</div>
             </div>
           </div>

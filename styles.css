@@ -352,6 +352,15 @@ body {
   font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  position: relative;
+}
+
+.user-avatar-sm.has-photo {
+  overflow: hidden;
+}
+
+.user-avatar-sm.has-photo .avatar-fallback {
+  display: none;
 }
 
 /* Modal overlay */
