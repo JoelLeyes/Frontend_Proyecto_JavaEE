@@ -31,6 +31,9 @@
       <div class="chat-dropdown-item" id="add-member-item" onclick="openAddMember()">
         <i class="bi bi-person-plus"></i> Agregar miembro
       </div>
+      <div class="chat-dropdown-item" id="change-group-photo-item" style="display:none" onclick="openGroupPhotoPicker()">
+        <i class="bi bi-image"></i> Cambiar foto del grupo
+      </div>
       <div class="chat-dropdown-item" id="rename-group-item" onclick="openRenameGroup()">
         <i class="bi bi-pencil"></i> Renombrar grupo
       </div>
@@ -105,6 +108,7 @@
 
    <!-- Input file oculto para seleccionar archivos - MÚLTIPLES -->
    <input type="file" id="archivo-input" style="display:none;" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" />
+  <input type="file" id="group-photo-input" style="display:none;" accept="image/*" onchange="uploadGroupPhoto(this)" />
 
   <!-- Indicador "escribiendo..." -->
   <div class="typing-indicator" id="typing-indicator"></div>
@@ -227,6 +231,7 @@
     if (isGroup) {
       document.getElementById('nav-sub').textContent = 'Grupo';
       loadParticipantCount();
+      loadGroupPhoto();
     }
 
     // ── Estado del otro usuario (chats privados) ──────────
@@ -290,6 +295,18 @@
         document.getElementById('nav-sub').innerHTML =
           `<span class="nav-status-dot ${cls}"></span>${label}`;
       } catch { /* sin backend, se deja vacío */ }
+    }
+
+    async function loadGroupPhoto() {
+      if (!isGroup) return;
+      try {
+        const res = await fetch(`/api/chats/${convId}/foto`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setHeaderAvatar(data.fotoGrupoUrl || null, convName);
+      } catch { /* sin backend */ }
     }
 
     const loadedIds = new Set();
@@ -793,9 +810,41 @@
           const me = list.find(p => String(p.idUsuario) === currentUserId);
           isAdminOfGroup = me && me.rol === 'ADMINISTRADOR';
           document.getElementById('add-member-item').style.display    = isAdminOfGroup ? '' : 'none';
+          document.getElementById('change-group-photo-item').style.display = isAdminOfGroup ? '' : 'none';
           document.getElementById('rename-group-item').style.display  = isAdminOfGroup ? '' : 'none';
         }
       } catch { /* sin backend */ }
+    }
+
+    function openGroupPhotoPicker() {
+      document.getElementById('chat-dropdown').classList.remove('open');
+      document.getElementById('group-photo-input').click();
+    }
+
+    async function uploadGroupPhoto(input) {
+      const file = input.files && input.files[0];
+      input.value = '';
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('foto', file);
+
+      try {
+        const res = await fetch(`/api/chats/${convId}/foto`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: formData
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          showToast(data.message || 'No se pudo actualizar la foto del grupo', 'error');
+          return;
+        }
+        setHeaderAvatar(data.fotoGrupoUrl || null, convName);
+        showToast('Foto del grupo actualizada.', 'success');
+      } catch {
+        showToast('No se pudo conectar con el servidor', 'error');
+      }
     }
 
     function toggleChatMenu(e) {

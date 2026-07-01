@@ -128,6 +128,16 @@
         <button type="button" class="btn btn-sm btn-light" onclick="closeNuevoGrupo()" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
       </div>
 
+      <div class="group-photo-picker mb-3" id="ng-photo-picker" role="button" tabindex="0" onclick="triggerNgPhotoInput()" onkeydown="onNgPhotoKeydown(event)">
+        <div class="group-photo-avatar" id="ng-photo-avatar"><i class="bi bi-image"></i></div>
+        <div class="group-photo-text">
+          <div class="group-photo-title">Foto del grupo</div>
+          <div class="group-photo-subtitle" id="ng-photo-label">Opcional. Elegí una imagen para identificar el grupo.</div>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm group-photo-action" onclick="event.stopPropagation(); triggerNgPhotoInput()">Elegir foto</button>
+      </div>
+      <input type="file" class="d-none" id="ng-photo-input" accept="image/*" onchange="onNgPhotoSelected(this)"/>
+
       <div class="step-indicator">
         <div class="step-dot active" id="sdot-1"></div>
         <div class="step-dot" id="sdot-2"></div>
@@ -160,7 +170,7 @@
         <div id="ng-empty" class="text-center py-2 text-muted d-none modal-hint-text">
           <i class="bi bi-person-x d-block mb-1 fs-4"></i>No se encontraron usuarios
         </div>
-        <button type="button" class="btn btn-primary-custom" onclick="crearGrupo()">
+        <button type="button" class="btn btn-primary-custom" id="ng-create-btn" onclick="crearGrupo()">
           <i class="bi bi-check-lg me-1"></i>Crear grupo
         </button>
       </div>
@@ -320,7 +330,7 @@
       const avatarCls = isGroup ? 'group' : 'private';
       const ini       = initials(conv.nombreChat);
       const time      = formatTime(conv.horaUltimoMensaje);
-      const photoUrl  = !isGroup ? resolvePhotoUrl(conv.fotoPerfilUrl) : '';
+      const photoUrl  = resolvePhotoUrl(isGroup ? conv.fotoGrupoUrl : conv.fotoPerfilUrl);
       const badge     = conv.mensajesSinLeer > 0
         ? `<span class="unread-badge">${conv.mensajesSinLeer}</span>` : '';
       const onlineDot = conv.online ? '<div class="online-dot"></div>' : '';
@@ -492,10 +502,72 @@
     // ── Nuevo grupo ────────────────────────────────────────
     let ngMiembros = [];  // [{idUsuario, nombre}]
     let ngTimer = null;
+    let ngFotoFile = null;
+    let ngFotoPreviewUrl = '';
+
+    function triggerNgPhotoInput() {
+      document.getElementById('ng-photo-input').click();
+    }
+
+    function onNgPhotoKeydown(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        triggerNgPhotoInput();
+      }
+    }
+
+    function resetNgPhotoPicker() {
+      if (ngFotoPreviewUrl) {
+        URL.revokeObjectURL(ngFotoPreviewUrl);
+        ngFotoPreviewUrl = '';
+      }
+      ngFotoFile = null;
+      const input = document.getElementById('ng-photo-input');
+      if (input) input.value = '';
+      const picker = document.getElementById('ng-photo-picker');
+      const avatar = document.getElementById('ng-photo-avatar');
+      const label = document.getElementById('ng-photo-label');
+      if (picker) picker.classList.remove('has-photo');
+      if (avatar) avatar.innerHTML = '<i class="bi bi-image"></i>';
+      if (label) label.textContent = 'Opcional. Elegí una imagen para identificar el grupo.';
+    }
+
+    function onNgPhotoSelected(input) {
+      const file = input.files && input.files[0] ? input.files[0] : null;
+      ngFotoFile = file;
+
+      const picker = document.getElementById('ng-photo-picker');
+      const avatar = document.getElementById('ng-photo-avatar');
+      const label = document.getElementById('ng-photo-label');
+
+      if (ngFotoPreviewUrl) {
+        URL.revokeObjectURL(ngFotoPreviewUrl);
+        ngFotoPreviewUrl = '';
+      }
+
+      if (!file) {
+        if (picker) picker.classList.remove('has-photo');
+        if (avatar) avatar.innerHTML = '<i class="bi bi-image"></i>';
+        if (label) label.textContent = 'Opcional. Elegí una imagen para identificar el grupo.';
+        return;
+      }
+
+      ngFotoPreviewUrl = URL.createObjectURL(file);
+      if (picker) picker.classList.add('has-photo');
+      if (avatar) {
+        avatar.innerHTML = '';
+        const img = document.createElement('img');
+        img.alt = 'Vista previa de la foto del grupo';
+        img.src = ngFotoPreviewUrl;
+        avatar.appendChild(img);
+      }
+      if (label) label.textContent = file.name;
+    }
 
     function openNuevoGrupo() {
       if (fabOpen) toggleFabMenu();
       ngMiembros = [];
+      resetNgPhotoPicker();
       document.getElementById('ng-nombre').value = '';
       document.getElementById('ng-next-btn').disabled = true;
       document.getElementById('ng-search').value = '';
@@ -509,6 +581,7 @@
     }
 
     function closeNuevoGrupo() {
+      resetNgPhotoPicker();
       document.getElementById('modal-nuevo-grupo').classList.remove('open');
     }
 
@@ -619,6 +692,14 @@
       const nombre = document.getElementById('ng-nombre').value.trim();
       if (!nombre) { showNgStep(1); return; }
       const miembros = ngMiembros.map(m => m.idUsuario);
+      const createBtn = document.getElementById('ng-create-btn');
+      const createBtnHtml = createBtn ? createBtn.innerHTML : '';
+
+      if (createBtn) {
+        createBtn.disabled = true;
+        createBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando...';
+      }
+
       try {
         const res = await fetch('/api/chats', {
           method:  'POST',
@@ -627,6 +708,21 @@
         });
         if (res.ok) {
           const chat = await res.json();
+
+          if (ngFotoFile) {
+            try {
+              const photoForm = new FormData();
+              photoForm.append('foto', ngFotoFile);
+              await fetch(`/api/chats/${chat.idChat}/foto`, {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + token },
+                body: photoForm
+              });
+            } catch {
+              // El grupo ya quedó creado; la foto se podrá cambiar después.
+            }
+          }
+
           closeNuevoGrupo();
           window.location.href = `chat.html?id=${chat.idChat}&name=${encodeURIComponent(chat.nombreChat)}&type=GROUP`;
         } else {
@@ -635,6 +731,11 @@
         }
       } catch {
         showToast('No se pudo conectar con el servidor');
+      } finally {
+        if (createBtn) {
+          createBtn.disabled = false;
+          createBtn.innerHTML = createBtnHtml || '<i class="bi bi-check-lg me-1"></i>Crear grupo';
+        }
       }
     }
 
