@@ -220,7 +220,7 @@
     const currentUserId = String(currentUser.idUsuario || currentUser.id || '');
 
     document.getElementById('nav-title').textContent  = convName;
-    document.getElementById('nav-avatar').textContent = initials(convName);
+    setHeaderAvatar(null, convName);
 
     // Solo mostrar menú "..." en grupos
     document.getElementById('chat-menu-btn').style.display = isGroup ? '' : 'none';
@@ -237,6 +237,42 @@
       DESCONECTADO: 'Desconectado',
     };
 
+    function resolvePhotoUrl(url) {
+      const value = String(url || '').trim();
+      if (!value) return '';
+      if (value.startsWith('/uploads/')) return '/api' + value;
+      if (value.startsWith('uploads/')) return '/api/' + value;
+      return value;
+    }
+
+    function setHeaderAvatar(photoUrl, name) {
+      const avatar = document.getElementById('nav-avatar');
+      const fallbackName = String(name || convName || 'U').trim();
+      const initialsText = initials(fallbackName);
+      const resolved = resolvePhotoUrl(photoUrl);
+
+      avatar.classList.remove('has-photo');
+      avatar.innerHTML = '';
+
+      if (!resolved) {
+        avatar.textContent = initialsText;
+        return;
+      }
+
+      const img = document.createElement('img');
+      img.className = 'chat-avatar-img';
+      img.alt = fallbackName;
+      img.src = resolved;
+      img.onerror = () => {
+        avatar.classList.remove('has-photo');
+        avatar.innerHTML = '';
+        avatar.textContent = initialsText;
+      };
+
+      avatar.classList.add('has-photo');
+      avatar.appendChild(img);
+    }
+
     async function loadUserStatus() {
       if (isGroup) return;
       try {
@@ -250,6 +286,7 @@
         const estado = (otro.tipoEstado || 'DESCONECTADO').toUpperCase();
         const label  = STATUS_LABELS[estado] || estado;
         const cls    = estado.toLowerCase().replace('_', '_');
+        setHeaderAvatar(otro.fotoPerfilUrl, `${otro.nombre || ''} ${otro.apellido || ''}`.trim() || convName);
         document.getElementById('nav-sub').innerHTML =
           `<span class="nav-status-dot ${cls}"></span>${label}`;
       } catch { /* sin backend, se deja vacío */ }
